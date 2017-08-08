@@ -8,9 +8,10 @@
 
 # 已编译平台
 
-[dproxy.v0.1.0-win64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.0/dproxy.v0.1.0-win64.zip)
+[dproxy.v0.1.1-win64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/dproxy.v0.1.1-win64.zip)
 
-[dproxy.v0.1.0-darwin64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.0/dproxy.v0.1.0-darwin64.zip)
+[dproxy.v0.1.1-darwin64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/dproxy.v0.1.1-darwin64.zip)
+
 
 # 运行参数
 
@@ -22,7 +23,19 @@
 -ip 应用监听IP地址。默认：127.0.0.1
 
 -port 应用监听端口。默认：8080
+
+-ui 是否打开WebUI管理界面服务。默认：true
 ```
+
+# 界面预览
+
+![](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/portmap.png)
+
+![](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/whitelist.png)
+
+![](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/log.png)
+
+![](https://github.com/Zaaksam/dproxy/releases/download/v0.1.1/doc.png)
 
 # 技术资源
 
