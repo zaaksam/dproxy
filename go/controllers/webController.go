@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Zaaksam/dproxy/go/views"
 	"github.com/astaxie/beego"
+	"github.com/zaaksam/dproxy/go/config"
+	"github.com/zaaksam/dproxy/go/views"
 )
 
 type WebController struct {
@@ -14,10 +15,13 @@ type WebController struct {
 }
 
 func (c *WebController) Get() {
-	unixStr := ""
-	if beego.BConfig.RunMode == beego.DEV {
-		unixStr = "?t=" + strconv.FormatInt(time.Now().Unix(), 10)
+	var unix int64
+	if config.AppConf.Debug {
+		unix = time.Now().Unix()
+	} else {
+		unix = config.AppConf.Started
 	}
+	unixStr := "?t=" + strconv.FormatInt(unix, 10)
 
 	index := strings.Replace(views.Index, "{{.unix}}", unixStr, -1)
 	index = strings.Replace(index, "{{.appname}}", beego.BConfig.AppName, -1)
