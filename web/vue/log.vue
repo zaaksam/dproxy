@@ -1,15 +1,11 @@
 <template>
     <div>
         <Row>
-            <Col span="20">
+            <Col span="24">
             <MyPage :total="table.list.total" :pageIndex="table.list.pageIndex" :pageSize="table.list.pageSize" @onLoad="onLoad"></MyPage>
             </Col>
-            <Col push="3" span="1">
-            <div style="padding:0px 0px 10px 0px;">
-                <Button type="primary" icon="plus-round"></Button>
-            </div>
-            </Col>
         </Row>
+        <p>&nbsp;</p>
         <Table stripe border :columns="table.columns" :data="table.list.items">
         </Table>
     </div>
