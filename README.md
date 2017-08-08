@@ -6,6 +6,12 @@
 
 `注意：目前仅实现部份场景下的应用，功能并未完全实现，开源出来交流学习`
 
+# 已编译平台
+
+[dproxy.v0.1.0-win64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.0/dproxy.v0.1.0-win64.zip)
+
+[dproxy.v0.1.0-darwin64.zip](https://github.com/Zaaksam/dproxy/releases/download/v0.1.0/dproxy.v0.1.0-darwin64.zip)
+
 # 运行参数
 
 ```
