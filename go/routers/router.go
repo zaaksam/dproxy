@@ -31,6 +31,12 @@ func init() {
 		beego.NSRouter("/log/list", &api.LogController{}, "get:List"),
 	)
 
+	if !config.AppConf.UI {
+		//只开启API服务
+		beego.AddNamespace(api)
+		return
+	}
+
 	web := beego.NewNamespace("/web", beego.NSRouter("/*", &controllers.WebController{}))
 
 	var staticHandler http.Handler
