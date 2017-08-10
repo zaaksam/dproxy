@@ -12,11 +12,12 @@ import (
 	"github.com/zaaksam/dproxy/go/config"
 	_ "github.com/zaaksam/dproxy/go/db"
 	_ "github.com/zaaksam/dproxy/go/routers"
+	"github.com/zaaksam/dproxy/go/services"
 )
 
 func main() {
-	beego.BConfig.AppName = "dproxy"
-	beego.BConfig.ServerName = "dproxy"
+	beego.BConfig.AppName = config.AppConf.Name
+	beego.BConfig.ServerName = config.AppConf.Name
 	beego.BConfig.WebConfig.AutoRender = false
 	beego.BConfig.WebConfig.DirectoryIndex = false
 	beego.BConfig.CopyRequestBody = true
@@ -31,12 +32,19 @@ func main() {
 	} else {
 		beego.BConfig.RunMode = beego.PROD
 
+		if config.AppConf.AutoStart {
+			err := services.Proxy.StartAll()
+			if err != nil {
+				logs.Error("端口映射任务启动失败：", err)
+			}
+		}
+
 		if config.AppConf.AutoOpen {
 			go openBrowser()
 		}
 	}
 
-	logs.Info("====== 欢迎使用 dproxy ，关闭此窗口即可退出程序 ======")
+	logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " ，关闭此窗口即可退出程序 ======")
 
 	beego.Run()
 }

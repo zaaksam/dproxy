@@ -10,10 +10,12 @@ var AppConf appConf
 
 func init() {
 	flag.BoolVar(&AppConf.Debug, "debug", false, "调试模式，默认：false")
-	flag.BoolVar(&AppConf.AutoOpen, "autoopen", true, "自动打开浏览器，默认：true")
+	flag.BoolVar(&AppConf.AutoOpen, "ao", true, "自动打开浏览器，默认：true")
+	flag.BoolVar(&AppConf.AutoStart, "as", false, "自动启动端口映射，默认：false")
 	flag.StringVar(&AppConf.IP, "ip", "", "监听的IP地址，默认：127.0.0.1")
 	flag.IntVar(&AppConf.Port, "port", 0, "服务端口，默认：8080")
 	flag.BoolVar(&AppConf.UI, "ui", true, "是否开启WebUI管理服务，默认：true")
+	flag.StringVar(&AppConf.PrefixPath, "prefix", "", "WebUI的路径前缀，默认为空")
 	flag.Parse()
 
 	// authURL?redirect_uri=http://127.0.0.1:8080/web/auth&code=abc
@@ -28,14 +30,20 @@ func init() {
 		AppConf.Port = 8080
 	}
 
+	AppConf.Name = "dproxy"
+	AppConf.Version = "0.2.0"
 	AppConf.Started = time.Now().Unix()
 }
 
 type appConf struct {
-	Debug    bool
-	AutoOpen bool
-	UI       bool
-	IP       string
-	Port     int
-	Started  int64
+	Name       string
+	Version    string
+	Debug      bool
+	AutoOpen   bool
+	AutoStart  bool
+	UI         bool
+	IP         string
+	Port       int
+	PrefixPath string
+	Started    int64
 }

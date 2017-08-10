@@ -1,6 +1,6 @@
 <template>
     <Menu mode="horizontal" theme="dark" :active-name="activeName" @on-select="onSelect">
-        <div class="layout-logo">dproxy 0.1.0</div>
+        <div class="layout-logo">{{title}}</div>
         <div class="layout-nav">
             <Menu-item name="whiteList">
                 <Icon type="ios-navigate"></Icon>
@@ -52,6 +52,7 @@ import { Component } from 'vue-property-decorator'
 
 @Component
 export default class MyTop extends Vue {
+    title: string = globalConfig.appName + ' ' + globalConfig.appVersion
     activeName: string = 'whiteList'
 
     mounted() {
@@ -65,7 +66,7 @@ export default class MyTop extends Vue {
     }
 
     onSelect(name: string) {
-        this.$router.push(name)
+        this.$router.push({ name: name })
     }
 }
 </script>

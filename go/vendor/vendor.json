@@ -3,12 +3,6 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "9FzAUyH6Ovky6rBAa1dZdRD8AM0=",
-			"path": "github.com/Zaaksam/dproxy/go/views",
-			"revision": "03a30546d2ea0b96533f31dabdf89739d26cb0a7",
-			"revisionTime": "2017-07-28T03:46:04Z"
-		},
-		{
 			"checksumSHA1": "g+4AgCjxvotVLox53tnXxjXuBnQ=",
 			"path": "github.com/astaxie/beego",
 			"revision": "d96289a81bf67728cff7a19b067aaecc65a62ec6",

@@ -42,9 +42,6 @@ import moment from 'moment'
 import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
 
-import { BaseModalModel, BaseListModel, WhiteListModel } from '../ts/model'
-import '../ts/iv'
-
 interface modalDataModel {
     id: number
     ip: string

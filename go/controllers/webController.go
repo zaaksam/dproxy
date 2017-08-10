@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"strconv"
 	"strings"
 	"time"
@@ -24,7 +25,16 @@ func (c *WebController) Get() {
 	unixStr := "?t=" + strconv.FormatInt(unix, 10)
 
 	index := strings.Replace(views.Index, "{{.unix}}", unixStr, -1)
-	index = strings.Replace(index, "{{.appname}}", beego.BConfig.AppName, -1)
+	index = strings.Replace(index, "{{.appname}}", config.AppConf.Name, -1)
+
+	globalConfig := bytes.NewBufferString(`var globalConfig={appName:"`)
+	globalConfig.WriteString(config.AppConf.Name)
+	globalConfig.WriteString(`",appVersion:"`)
+	globalConfig.WriteString(config.AppConf.Version)
+	globalConfig.WriteString(`",prefixPath:"`)
+	globalConfig.WriteString(config.AppConf.PrefixPath)
+	globalConfig.WriteString(`"}`)
+	index = strings.Replace(index, "{{.globalconfig}}", globalConfig.String(), -1)
 
 	if c.Ctx.ResponseWriter.Header().Get("Content-Type") == "" {
 		c.Ctx.Output.Header("Content-Type", "text/html; charset=utf-8")

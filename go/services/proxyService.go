@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/zaaksam/dproxy/go/logger"
+	"github.com/zaaksam/dproxy/go/model"
 )
 
 // Proxy 代理服务对象
@@ -36,6 +37,50 @@ func (s *proxyService) delProxy(id int64) {
 	defer s.mx.Unlock()
 
 	delete(s.proxys, id)
+}
+
+func (s *proxyService) StartAll() error {
+	list, err := PortMap.Find(1, 500, "", "", "")
+	if err != nil {
+		return err
+	}
+
+	if list.Total <= 0 {
+		return nil
+	}
+
+	var mds []*model.PortMapModel
+	if items, ok := list.Items.(*[]*model.PortMapModel); ok {
+		mds = *items
+	} else {
+		return nil
+	}
+
+	for i, l := 0, len(mds); i < l; i++ {
+		if !mds[i].IsStart {
+			err = s.Start(mds[i].ID)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *proxyService) StopAll() {
+	list, err := PortMap.Find(1, 500, "", "", "")
+	if err != nil {
+		return
+	}
+
+	if list.Total <= 0 {
+		return
+	}
+
+	for partMapID := range Proxy.proxys {
+		s.Stop(partMapID)
+	}
 }
 
 // Start 启动代理请求服务

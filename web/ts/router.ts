@@ -9,10 +9,10 @@ import MyDoc from '../vue/doc.vue'
 Vue.use(VueRouter)
 
 const routes: VueRouter.RouteConfig[] = [
-    { path: '/web/whitelist', name: 'whiteList', component: MyWhiteList },
-    { path: '/web/portmap', name: 'portMap', component: MyPortMap },
-    { path: '/web/log', name: 'log', component: MyLog },
-    { path: '/web/doc', name: 'doc', component: MyDoc }
+    { path: globalConfig.prefixPath + '/web/whitelist', name: 'whiteList', component: MyWhiteList },
+    { path: globalConfig.prefixPath + '/web/portmap', name: 'portMap', component: MyPortMap },
+    { path: globalConfig.prefixPath + '/web/log', name: 'log', component: MyLog },
+    { path: globalConfig.prefixPath + '/web/doc', name: 'doc', component: MyDoc }
 ]
 
 const Router = new VueRouter({

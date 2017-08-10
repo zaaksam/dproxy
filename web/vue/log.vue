@@ -20,9 +20,6 @@ import moment from 'moment'
 import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
 
-import { BaseListModel, LogModel } from '../ts/model'
-import '../ts/iv'
-
 interface listModel extends BaseListModel {
     items: LogModel[]
 }
