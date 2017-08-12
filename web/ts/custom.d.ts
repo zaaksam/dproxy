@@ -56,6 +56,7 @@ declare interface LogModel {
 interface globalConfigStatic {
     appName: string
     appVersion: string
+    token: string
     prefixPath: string
 }
 

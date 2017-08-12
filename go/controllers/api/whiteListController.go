@@ -58,7 +58,7 @@ func (c *WhiteListController) Put() {
 
 	idStr := c.Ctx.Input.Param(":id")
 	if idStr == "" {
-		md.IP = c.Ctx.Input.IP()
+		// md.IP = c.Ctx.Input.IP()
 		md, err = services.WhiteList.Add(md)
 	} else {
 		md.ID, err = strconv.ParseInt(idStr, 10, 0)

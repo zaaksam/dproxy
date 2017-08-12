@@ -31,6 +31,8 @@ func (c *WebController) Get() {
 	globalConfig.WriteString(config.AppConf.Name)
 	globalConfig.WriteString(`",appVersion:"`)
 	globalConfig.WriteString(config.AppConf.Version)
+	globalConfig.WriteString(`",token:"`)
+	globalConfig.WriteString(config.AppConf.Token)
 	globalConfig.WriteString(`",prefixPath:"`)
 	globalConfig.WriteString(config.AppConf.PrefixPath)
 	globalConfig.WriteString(`"}`)

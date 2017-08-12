@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/astaxie/beego"
+	"github.com/zaaksam/dproxy/go/config"
 )
 
 // BaseController API基础控制器
@@ -20,7 +21,23 @@ const (
 	ResponseOK ResponseCodeType = 10000
 	// ResponseError 错误响应
 	ResponseError ResponseCodeType = 90000
+	// ResponseUnauthorized 没有权限
+	ResponseUnauthorized ResponseCodeType = 90100
 )
+
+// CheckToken 检查token
+func (c *BaseController) CheckToken() {
+	if config.AppConf.Token == "" {
+		return
+	}
+
+	token := c.GetString("token")
+	if token != config.AppConf.Token {
+		c.SetError("没有权限", ResponseUnauthorized)
+		c.Finish()
+		c.StopRun()
+	}
+}
 
 // Prepare beego Controller Prepare事件
 func (c *BaseController) Prepare() {
@@ -28,6 +45,8 @@ func (c *BaseController) Prepare() {
 	if c.data == nil {
 		c.data = make(map[string]interface{})
 	}
+
+	c.CheckToken()
 }
 
 // SetData 设置响应的数据

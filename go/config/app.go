@@ -16,6 +16,7 @@ func init() {
 	flag.IntVar(&AppConf.Port, "port", 0, "服务端口，默认：8080")
 	flag.BoolVar(&AppConf.UI, "ui", true, "是否开启WebUI管理服务，默认：true")
 	flag.StringVar(&AppConf.PrefixPath, "prefix", "", "WebUI的路径前缀，默认为空")
+	flag.StringVar(&AppConf.Token, "token", "", "API授权令牌，为空时不校验，默认为空")
 	flag.Parse()
 
 	// authURL?redirect_uri=http://127.0.0.1:8080/web/auth&code=abc
@@ -45,5 +46,6 @@ type appConf struct {
 	IP         string
 	Port       int
 	PrefixPath string
+	Token      string
 	Started    int64
 }

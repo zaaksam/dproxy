@@ -12,8 +12,11 @@
         </Row>
         <Table stripe border :columns="table.columns" :data="table.list.items">
         </Table>
-        <Modal title="端口映射" v-model="modal.isShow" :mask-closable="false" :closable="false">
+        <Modal :title="modalState.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
             <Form :label-width="80">
+                <Form-item label="ID" v-show="modalState.isEdit">
+                    <Input v-model="modal.data.id" readonly></Input>
+                </Form-item>
                 <Form-item label="标题">
                     <Input v-model="modal.data.title"></Input>
                 </Form-item>
@@ -29,7 +32,10 @@
                 <Form-item label="目标端口">
                     <Input v-model="modal.data.targetPort" @on-keydown="onKeyDown" number></Input>
                 </Form-item>
-                <Form-item label="创建者">
+                <Form-item label="创建者ID">
+                    <Input v-model="modal.data.userID"></Input>
+                </Form-item>
+                <Form-item label="创建者名称">
                     <Input v-model="modal.data.userName"></Input>
                 </Form-item>
             </Form>
@@ -37,7 +43,7 @@
             <Alert v-show="modal.isErr" type="error" show-icon>{{modal.errMsg}}</Alert>
             <div slot="footer">
                 <Button :disabled="modal.isLoading" @click="onModalCancel">取消</Button>
-                <Button type="primary" :loading="modal.isLoading" @click="onModalOK">确定</Button>
+                <Button type="primary" :loading="modal.isLoading" @click="onModalOK">{{modalState.okBtnText}}</Button>
             </div>
         </Modal>
     </div>
@@ -50,6 +56,13 @@ import _ from 'lodash'
 import moment from 'moment'
 import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
+import API from '../ts/api'
+
+interface modalState {
+    isEdit: boolean
+    title: string
+    okBtnText: string
+}
 
 interface modalDataModel {
     id: number
@@ -81,6 +94,11 @@ interface tableModel {
     }
 })
 export default class MyPortMap extends Vue {
+    modalState: modalState = {
+        isEdit: false,
+        title: '',
+        okBtnText: ''
+    }
     modal: modalModel = {
         isShow: false,
         isLoading: false,
@@ -128,7 +146,11 @@ export default class MyPortMap extends Vue {
                 key: 'targetPort'
             },
             {
-                title: '创建者',
+                title: '创建者ID',
+                key: 'userID'
+            },
+            {
+                title: '创建者名称',
                 key: 'userName'
             },
             {
@@ -212,7 +234,7 @@ export default class MyPortMap extends Vue {
             ps = this.table.list.pageSize
         }
 
-        Axios.get('/api/portmap/list', { params: { pageIndex: pi, pageSize: ps } })
+        Axios.get(API.initURL('/api/portmap/list'), { params: { pageIndex: pi, pageSize: ps } })
             .then((res: AxiosResponse) => {
                 this.table.list = <listModel>res.data.data.list
 
@@ -247,7 +269,7 @@ export default class MyPortMap extends Vue {
         let isStart = !this.table.list.items[index].isStart
         let str = isStart ? 'start' : 'stop'
 
-        Axios.get('/api/proxy/' + str + '/' + this.table.list.items[index].id.toString())
+        Axios.get(API.initURL('/api/proxy/' + str + '/' + this.table.list.items[index].id.toString()))
             .then((res: AxiosResponse) => {
                 if (res.data.code === 10000) {
                     this.table.list.items[index].isStart = isStart
@@ -269,7 +291,7 @@ export default class MyPortMap extends Vue {
     onDel(index: number) {
         let id: number = this.table.list.items[index].id
 
-        Axios.delete('/api/portmap/' + id.toString())
+        Axios.delete(API.initURL('/api/portmap/' + id.toString()))
             .then((res: AxiosResponse) => {
                 if (res.data.code === 10000) {
                     this.onLoad()
@@ -289,8 +311,16 @@ export default class MyPortMap extends Vue {
         this.modal.errMsg = ''
 
         if (data) {
+            this.modalState.isEdit = true
+            this.modalState.title = '端口映射修改'
+            this.modalState.okBtnText = '修改'
+
             this.modal.data = _.pick(data, _.keys(this.modal.data))
         } else {
+            this.modalState.isEdit = false
+            this.modalState.title = '端口映射添加'
+            this.modalState.okBtnText = '添加'
+
             this.modal.data = {
                 id: 0,
                 title: '',
@@ -298,7 +328,7 @@ export default class MyPortMap extends Vue {
                 targetPort: 80,
                 sourceIP: '127.0.0.1',
                 sourcePort: 80,
-                userID: '0',
+                userID: '',
                 userName: ''
             }
         }
@@ -332,7 +362,7 @@ export default class MyPortMap extends Vue {
             id = '/' + this.modal.data.id.toString()
         }
 
-        Axios.put('/api/portmap' + id, this.modal.data)
+        Axios.put(API.initURL('/api/portmap' + id), this.modal.data)
             .then((res: AxiosResponse) => {
                 if (res.data.code === 10000) {
                     if (this.modal.data.id > 0) {

@@ -19,6 +19,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
+import API from '../ts/api'
 
 interface listModel extends BaseListModel {
     items: LogModel[]
@@ -76,7 +77,7 @@ export default class MyLog extends Vue {
             ps = this.table.list.pageSize
         }
 
-        Axios.get('/api/log/list', { params: { pageIndex: pi, pageSize: ps } })
+        Axios.get(API.initURL('/api/log/list'), { params: { pageIndex: pi, pageSize: ps } })
             .then((res: AxiosResponse) => {
                 this.table.list = <listModel>res.data.data.list
 

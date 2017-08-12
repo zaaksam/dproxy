@@ -39,7 +39,7 @@ func main() {
 			}
 		}
 
-		if config.AppConf.AutoOpen {
+		if config.AppConf.UI && config.AppConf.AutoOpen {
 			go openBrowser()
 		}
 	}

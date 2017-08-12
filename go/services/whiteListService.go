@@ -135,6 +135,8 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 		err = errors.New("model对象不能为空")
 	} else if md.ID <= 0 {
 		err = errors.New("ID不能为空")
+	} else if md.IP == "" {
+		err = errors.New("IP不能为空")
 	} else if md.UserID == "" {
 		err = errors.New("UserID不能为空")
 	} else if md.UserName == "" {
@@ -144,10 +146,24 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 		return
 	}
 
-	md.Updated = time.Now().Unix()
+	updated := time.Now().Unix()
+	session := db.NewSession()
+
+	var cnt int64
+	cnt, err = session.Where("Deleted=0 and IP=? and Expired>? and ID!=?", md.IP, updated, md.ID).Count(&model.WhiteListModel{})
+	if err != nil {
+		err = errors.New("查询IP错误：" + err.Error())
+	} else if cnt > 0 {
+		err = errors.New("有效白名单已存在")
+	}
+	if err != nil {
+		return
+	}
+
+	md.Updated = updated
 
 	var n int64
-	n, err = db.Engine.Where("Deleted=0 and ID=?", md.ID).Cols("UserID", "UserName", "Updated").Update(md)
+	n, err = session.Where("Deleted=0 and ID=?", md.ID).Cols("IP", "UserID", "UserName", "Updated").Update(md)
 	if err != nil {
 		err = errors.New("更新白名单失败：" + err.Error())
 	} else if n <= 0 {
