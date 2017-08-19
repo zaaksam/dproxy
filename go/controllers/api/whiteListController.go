@@ -37,8 +37,9 @@ func (c *WhiteListController) List() {
 	pageSize, _ := c.GetInt("pageSize")
 	ip := c.GetString("ip")
 	userName := c.GetString("userName")
+	isExpired, _ := c.GetBool("isExpired")
 
-	list, err := services.WhiteList.Find(pageIndex, pageSize, ip, userName, false)
+	list, err := services.WhiteList.Find(pageIndex, pageSize, ip, userName, isExpired)
 	if err != nil {
 		c.SetError(err)
 		return
