@@ -87,6 +87,12 @@ go get -u github.com/mattn/go-sqlite3
 
 # 更新日志
 
+2017-08-19 v0.2.1
+
+* 白名单列表API增加 isExpired 参数
+
+---
+
 2017-08-12 v0.2.0
 
 * 增加WebUI的前缀路径命令行参数：-prefix
