@@ -198,11 +198,11 @@ export default class MyWhiteList extends Vue {
                 this.table.list = <listModel>res.data.data.list
 
                 if (res.data.code === 90000) {
-                    this.$Message.error({ content: res.data.msg + '(' + res.data.code.toString() + ')' })
+                    this.$Message.error({ duration: 5, content: res.data.msg + '(' + res.data.code.toString() + ')' })
                 }
             })
             .catch((err: AxiosError) => {
-                this.$Message.error({ content: err.message + '(' + err.code + ')' })
+                this.$Message.error({ duration: 5, content: err.message + '(' + err.code + ')' })
             })
     }
 
@@ -224,11 +224,11 @@ export default class MyWhiteList extends Vue {
                 if (res.data.code === 10000) {
                     this.onLoad()
                 } else {
-                    this.$Message.error({ content: res.data.msg + '(' + res.data.code.toString() + ')' })
+                    this.$Message.error({ duration: 5, content: res.data.msg + '(' + res.data.code.toString() + ')' })
                 }
             })
             .catch((err: AxiosError) => {
-                this.$Message.error({ content: err.message + '(' + err.code + ')' })
+                this.$Message.error({ duration: 5, content: err.message + '(' + err.code + ')' })
             })
     }
 
