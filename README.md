@@ -87,6 +87,13 @@ go get -u github.com/mattn/go-sqlite3
 
 # 更新日志
 
+2017-08-21 v0.2.2
+
+* 修正端口映射源资料修改无效的bug
+* web类message提示持续时间改为5秒
+
+---
+
 2017-08-19 v0.2.1
 
 * 白名单列表API增加 isExpired 参数

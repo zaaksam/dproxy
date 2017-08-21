@@ -32,7 +32,7 @@ func init() {
 	}
 
 	AppConf.Name = "dproxy"
-	AppConf.Version = "0.2.0"
+	AppConf.Version = "0.2.2"
 	AppConf.Started = time.Now().Unix()
 }
 
