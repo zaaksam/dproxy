@@ -6,9 +6,9 @@
 
 # 已编译平台
 
-[dproxy.v0.2.0-win64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=90453&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FAD%2FPaAvDFmO1U6ACVYEAHq-ErEBfsE224.zip%3Ftoken%3Ddd24723ee8349259423d66956e7ba1b8%26ts%3D1502533216%26attname%3Ddproxy.v0.2.0-win64.zip)
+[dproxy.v0.2.0-win64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=91560&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBA%2FPaAvDFmaOt-AOq8tAHxzCWkFB80496.zip%3Ftoken%3D7b7777eaa9643222e9814158318b0fa7%26ts%3D1503280320%26attname%3Ddproxy.v0.2.2-win64.zip)
 
-[dproxy.v0.2.0-darwin64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=90454&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FAD%2FPaAvDFmO1l-AaimAAITY32S4WQk309.zip%3Ftoken%3D08af51d85fdc57a4c630f41661976768%26ts%3D1502533216%26attname%3Ddproxy.v0.2.0-darwin64.zip)
+[dproxy.v0.2.0-darwin64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=91561&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBA%2FPaAvDFmaPC6AKqepAIa8E6YTJdY650.zip%3Ftoken%3Dad90c6254e454abad363ab2be9bf0ea2%26ts%3D1503280320%26attname%3Ddproxy.v0.2.2-darwin64.zip)
 
 
 # 运行参数
