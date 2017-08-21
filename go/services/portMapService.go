@@ -165,7 +165,7 @@ func (*portMapService) Update(md *model.PortMapModel) (err error) {
 	md.Updated = time.Now().Unix()
 
 	var n int64
-	n, err = db.Engine.Where("Deleted=0 and ID=?", md.ID).Cols("Title", "TargetIP", "TargetPort", "UserID", "UserName", "Updated").Update(md)
+	n, err = db.Engine.Where("Deleted=0 and ID=?", md.ID).Cols("Title", "TargetIP", "TargetPort", "SourceIP", "SourcePort", "UserID", "UserName", "Updated").Update(md)
 	if err != nil {
 		err = errors.New("更新端口映射失败：" + err.Error())
 	} else if n <= 0 {
