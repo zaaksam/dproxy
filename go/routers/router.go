@@ -31,7 +31,7 @@ func init() {
 		beego.NSRouter("/log/list", &api.LogController{}, "get:List"),
 	)
 
-	if !config.AppConf.UI {
+	if config.AppConf.IsServerMode {
 		//只开启API服务
 		beego.AddNamespace(api)
 		return

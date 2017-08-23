@@ -2,6 +2,10 @@ package config
 
 import (
 	"flag"
+	"fmt"
+	"math/rand"
+	"net"
+	"strings"
 	"time"
 )
 
@@ -9,43 +13,78 @@ import (
 var AppConf appConf
 
 func init() {
+	var mode string
 	flag.BoolVar(&AppConf.Debug, "debug", false, "调试模式，默认：false")
-	flag.BoolVar(&AppConf.AutoOpen, "ao", true, "自动打开浏览器，默认：true")
-	flag.BoolVar(&AppConf.AutoStart, "as", false, "自动启动端口映射，默认：false")
 	flag.StringVar(&AppConf.IP, "ip", "", "监听的IP地址，默认：127.0.0.1")
-	flag.IntVar(&AppConf.Port, "port", 0, "服务端口，默认：8080")
-	flag.BoolVar(&AppConf.UI, "ui", true, "是否开启WebUI管理服务，默认：true")
-	flag.StringVar(&AppConf.PrefixPath, "prefix", "", "WebUI的路径前缀，默认为空")
+	flag.IntVar(&AppConf.Port, "port", 0, "服务端口，默认：随机")
+	flag.StringVar(&mode, "mode", "web", "运行模式：server：API服务模式；web：Web模式；app：App模式(试验)，默认：web")
+	flag.StringVar(&AppConf.PrefixPath, "prefix", "", "Web模式下有效，WebUI的路径前缀，默认为空")
 	flag.StringVar(&AppConf.Token, "token", "", "API授权令牌，为空时不校验，默认为空")
 	flag.Parse()
-
-	// authURL?redirect_uri=http://127.0.0.1:8080/web/auth&code=abc
-	// redirect时，须在uri上附上 code、userID、userName 参数
-	// flag.StringVar(&authURL, "authURL", "", "授权URL地址，不为空时开启鉴权，跳转往该地址获取授权")
 
 	if AppConf.IP == "" {
 		AppConf.IP = "127.0.0.1"
 	}
 
 	if AppConf.Port <= 0 {
-		AppConf.Port = 8080
+		AppConf.Port = newPort(AppConf.IP)
+	}
+
+	switch strings.ToLower(mode) {
+	case "server":
+		AppConf.IsServerMode = true
+	case "web":
+		AppConf.IsWebMode = true
+	case "app":
+		AppConf.IsAppMode = true
+	default:
+		AppConf.IsWebMode = true
+	}
+
+	if AppConf.IsServerMode || AppConf.IsAppMode {
+		AppConf.PrefixPath = ""
 	}
 
 	AppConf.Name = "dproxy"
-	AppConf.Version = "0.2.2"
+	AppConf.Version = "0.3.0"
 	AppConf.Started = time.Now().Unix()
 }
 
 type appConf struct {
-	Name       string
-	Version    string
-	Debug      bool
-	AutoOpen   bool
-	AutoStart  bool
-	UI         bool
-	IP         string
-	Port       int
-	PrefixPath string
-	Token      string
-	Started    int64
+	Name    string
+	Version string
+	Debug   bool
+	Mode    string
+	// AutoOpen   bool
+	// AutoStart  bool
+	// UI         bool
+	IP           string
+	Port         int
+	PrefixPath   string
+	Token        string
+	Started      int64
+	IsServerMode bool
+	IsWebMode    bool
+	IsAppMode    bool
+}
+
+//newPort 查找可用端口
+func newPort(ip string) int {
+	for {
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		port := r.Intn(60000)
+		if port <= 0 {
+			continue
+		}
+
+		conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
+		if err != nil {
+			if strings.Contains(err.Error(), "connection refused") {
+				return port
+			}
+
+			continue
+		}
+		conn.Close()
+	}
 }
