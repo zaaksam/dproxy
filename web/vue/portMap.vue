@@ -12,9 +12,9 @@
         </Row>
         <Table stripe border :columns="table.columns" :data="table.list.items">
         </Table>
-        <Modal :title="modalState.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
+        <Modal :title="modal.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
             <Form :label-width="80">
-                <Form-item label="ID" v-show="modalState.isEdit">
+                <Form-item label="ID" v-show="modal.isEdit">
                     <Input v-model="modal.data.id" readonly></Input>
                 </Form-item>
                 <Form-item label="标题">
@@ -43,7 +43,7 @@
             <Alert v-show="modal.isErr" type="error" show-icon>{{modal.errMsg}}</Alert>
             <div slot="footer">
                 <Button :disabled="modal.isLoading" @click="onModalCancel">取消</Button>
-                <Button type="primary" :loading="modal.isLoading" @click="onModalOK">{{modalState.okBtnText}}</Button>
+                <Button type="primary" :loading="modal.isLoading" @click="onModalOK">{{modal.okBtnText}}</Button>
             </div>
         </Modal>
     </div>
@@ -57,12 +57,6 @@ import moment from 'moment'
 import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
 import API from '../ts/api'
-
-interface modalState {
-    isEdit: boolean
-    title: string
-    okBtnText: string
-}
 
 interface modalDataModel {
     id: number
@@ -94,16 +88,14 @@ interface tableModel {
     }
 })
 export default class MyPortMap extends Vue {
-    modalState: modalState = {
-        isEdit: false,
-        title: '',
-        okBtnText: ''
-    }
     modal: modalModel = {
         isShow: false,
         isLoading: false,
         isErr: false,
         errMsg: '',
+        isEdit: false,
+        title: '',
+        okBtnText: '',
         data: {
             id: 0,
             title: '',
@@ -311,15 +303,15 @@ export default class MyPortMap extends Vue {
         this.modal.errMsg = ''
 
         if (data) {
-            this.modalState.isEdit = true
-            this.modalState.title = '端口映射修改'
-            this.modalState.okBtnText = '修改'
+            this.modal.isEdit = true
+            this.modal.title = '端口映射修改'
+            this.modal.okBtnText = '修改'
 
             this.modal.data = _.pick(data, _.keys(this.modal.data))
         } else {
-            this.modalState.isEdit = false
-            this.modalState.title = '端口映射添加'
-            this.modalState.okBtnText = '添加'
+            this.modal.isEdit = false
+            this.modal.title = '端口映射添加'
+            this.modal.okBtnText = '添加'
 
             this.modal.data = {
                 id: 0,

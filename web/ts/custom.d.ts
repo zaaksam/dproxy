@@ -13,6 +13,9 @@ declare interface BaseModalModel {
     isLoading: boolean
     isErr: boolean
     errMsg: string
+    isEdit: boolean
+    title: string
+    okBtnText: string
 }
 
 declare interface BaseListModel {
