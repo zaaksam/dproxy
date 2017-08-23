@@ -40,6 +40,8 @@ func main() {
 		if err != nil {
 			logs.Error("端口映射任务启动失败：", err)
 		}
+
+		beego.Run()
 	} else if config.AppConf.IsWebMode {
 		logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (Web模式) ，关闭此窗口即可退出程序 ======")
 
