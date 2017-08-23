@@ -77,7 +77,7 @@ func newPort(ip string) int {
 
 		conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
 		if err != nil {
-			if strings.Contains(err.Error(), "connection refused") {
+			if strings.Contains(err.Error(), "refused") {
 				return port
 			}
 
