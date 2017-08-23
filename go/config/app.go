@@ -68,7 +68,12 @@ type appConf struct {
 
 //newPort 查找可用端口
 func newPort(ip string) int {
+	i := 0
 	for {
+		if i > 10 {
+			return 8080
+		}
+
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		port := r.Intn(60000)
 		if port <= 0 {
@@ -81,6 +86,7 @@ func newPort(ip string) int {
 				return port
 			}
 
+			i++
 			continue
 		}
 		conn.Close()
