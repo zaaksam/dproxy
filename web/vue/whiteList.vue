@@ -12,9 +12,9 @@
         </Row>
         <Table stripe border :columns="table.columns" :data="table.list.items">
         </Table>
-        <Modal :title="modalState.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
+        <Modal :title="modal.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
             <Form :label-width="100">
-                <Form-item label="白名单ID" v-show="modalState.isEdit">
+                <Form-item label="白名单ID" v-show="modal.isEdit">
                     <Input v-model="modal.data.id" readonly></Input>
                 </Form-item>
                 <Form-item label="申请者ID">
@@ -26,12 +26,15 @@
                 <Form-item label="申请者IP">
                     <Input v-model="modal.data.ip"></Input>
                 </Form-item>
+                <Form-item label="过期时间">
+                    <Date-picker type="datetime" :value="modal.expiredStr" placement="top" :options="dateOptions" :editable="false" placeholder="放空默认24小时后过期" style="width: 200px" @on-change="onModalDatetimeChange"></Date-picker>
+                </Form-item>
             </Form>
             <Alert v-show="modal.isLoading" type="warning" show-icon>数据提交中，请勿关闭此窗口...</Alert>
             <Alert v-show="modal.isErr" type="error" show-icon>{{modal.errMsg}}</Alert>
             <div slot="footer">
                 <Button :disabled="modal.isLoading" @click="onModalCancel">取消</Button>
-                <Button type="primary" :loading="modal.isLoading" @click="onModalOk">{{modalState.okBtnText}}</Button>
+                <Button type="primary" :loading="modal.isLoading" @click="onModalOk">{{modal.okBtnText}}</Button>
             </div>
         </Modal>
     </div>
@@ -46,20 +49,16 @@ import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
 import API from '../ts/api'
 
-interface modalState {
-    isEdit: boolean
-    title: string
-    okBtnText: string
-}
-
 interface modalDataModel {
     id: number
     ip: string
     userID: string
     userName: string
+    expired: number
 }
 
 interface modalModel extends BaseModalModel {
+    expiredStr: string
     data: modalDataModel
 }
 
@@ -78,21 +77,27 @@ interface tableModel {
     }
 })
 export default class MyWhiteList extends Vue {
-    modalState: modalState = {
-        isEdit: false,
-        title: '',
-        okBtnText: ''
-    }
     modal: modalModel = {
         isShow: false,
         isLoading: false,
         isErr: false,
         errMsg: '',
+        isEdit: false,
+        title: '',
+        okBtnText: '',
+        expiredStr: '',
         data: {
             id: 0,
             ip: '',
             userID: '',
-            userName: ''
+            userName: '',
+            expired: 0
+        }
+    }
+    dateOptions: any = {
+        disabledDate: (date: Date) => {
+            // - 86400000
+            return date && date.valueOf() < Date.now()
         }
     }
     table: tableModel = {
@@ -239,22 +244,37 @@ export default class MyWhiteList extends Vue {
         this.modal.errMsg = ''
 
         if (data) {
-            this.modalState.isEdit = true
-            this.modalState.title = '白名单修改'
-            this.modalState.okBtnText = '修改'
+            this.modal.isEdit = true
+            this.modal.title = '白名单修改'
+            this.modal.okBtnText = '修改'
 
             this.modal.data = _.pick(data, _.keys(this.modal.data))
+            this.modal.expiredStr = moment.unix(this.modal.data.expired).format('YYYY-MM-DD HH:mm:ss')
         } else {
-            this.modalState.isEdit = false
-            this.modalState.title = '白名单申请'
-            this.modalState.okBtnText = '申请'
+            this.modal.isEdit = false
+            this.modal.title = '白名单申请'
+            this.modal.okBtnText = '申请'
 
             this.modal.data = {
                 id: 0,
                 ip: '',
                 userID: '',
-                userName: ''
+                userName: '',
+                expired: 0
             }
+            // this.modal.expiredDate = moment.unix(this.modal.data.expired).toDate()
+            this.modal.expiredStr = ''
+        }
+    }
+
+    onModalDatetimeChange(expiredStr: string) {
+        this.modal.expiredStr = expiredStr
+
+        let unix = moment(expiredStr, 'YYYY-MM-DD HH:mm:ss').unix()
+        if (_.isNaN(unix)) {
+            this.modal.data.expired = 0
+        } else {
+            this.modal.data.expired = unix
         }
     }
 

@@ -78,6 +78,9 @@ func (*whiteListService) Find(pageIndex, pageSize int, ip string, userName strin
 
 // Add 添加新的白名单
 func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListModel, err error) {
+	t := time.Now()
+	created := t.Unix()
+
 	if md == nil {
 		err = errors.New("model对象不能为空")
 	} else if md.IP == "" {
@@ -86,13 +89,13 @@ func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListM
 		err = errors.New("UserID不能为空")
 	} else if md.UserName == "" {
 		err = errors.New("UserName不能为空")
+	} else if md.Expired > 0 && md.Expired <= created {
+		err = errors.New("Expired不能小于当前时间")
 	}
 	if err != nil {
 		return
 	}
 
-	t := time.Now()
-	created := t.Unix()
 	session := db.NewSession()
 
 	var cnt int64
@@ -109,7 +112,9 @@ func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListM
 	md.ID = t.UnixNano() / 1000 //微秒单位
 	md.Created = created
 	md.Updated = md.Created
-	md.Expired = t.Add(24 * time.Hour).Unix()
+	if md.Expired <= 0 {
+		md.Expired = t.Add(24 * time.Hour).Unix()
+	}
 	md.Deleted = 0
 
 	var n int64
@@ -131,6 +136,8 @@ func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListM
 
 // Update 更新白名单数据
 func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
+	updated := time.Now().Unix()
+
 	if md == nil {
 		err = errors.New("model对象不能为空")
 	} else if md.ID <= 0 {
@@ -141,14 +148,14 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 		err = errors.New("UserID不能为空")
 	} else if md.UserName == "" {
 		err = errors.New("UserName不能为空")
+	} else if md.Expired <= updated {
+		err = errors.New("Expired不能小于当前时间")
 	}
 	if err != nil {
 		return
 	}
 
-	updated := time.Now().Unix()
 	session := db.NewSession()
-
 	var cnt int64
 	cnt, err = session.Where("Deleted=0 and IP=? and Expired>? and ID!=?", md.IP, updated, md.ID).Count(&model.WhiteListModel{})
 	if err != nil {
@@ -163,7 +170,7 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 	md.Updated = updated
 
 	var n int64
-	n, err = session.Where("Deleted=0 and ID=?", md.ID).Cols("IP", "UserID", "UserName", "Updated").Update(md)
+	n, err = session.Where("Deleted=0 and ID=?", md.ID).Cols("IP", "UserID", "UserName", "Expired", "Updated").Update(md)
 	if err != nil {
 		err = errors.New("更新白名单失败：" + err.Error())
 	} else if n <= 0 {
