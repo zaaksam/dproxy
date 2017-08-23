@@ -6,9 +6,9 @@
 
 # 已编译平台
 
-[dproxy.v0.2.2-win64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=91560&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBA%2FPaAvDFmaOt-AOq8tAHxzCWkFB80496.zip%3Ftoken%3D7b7777eaa9643222e9814158318b0fa7%26ts%3D1503280320%26attname%3Ddproxy.v0.2.2-win64.zip)
+[dproxy.v0.3.1-win64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=91899&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBE%2FPaAvDFmc8dWABEFsAHx64EyJo7U983.zip%3Ftoken%3D699264155087375fb9f3d8ea2daabaca%26ts%3D1503457749%26attname%3Ddproxy.v0.3.1-win64.zip)
 
-[dproxy.v0.2.2-darwin64.zip](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=91561&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBA%2FPaAvDFmaPC6AKqepAIa8E6YTJdY650.zip%3Ftoken%3Dad90c6254e454abad363ab2be9bf0ea2%26ts%3D1503280320%26attname%3Ddproxy.v0.2.2-darwin64.zip)
+[dproxy.v0.3.1-darwin64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=91897&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBE%2FPaAvDFmc8KGAcnyWAHx64NUmtPg562.zip%3Ftoken%3De4d3fd360fad233cf2c6be1211d3fadd%26ts%3D1503457749%26attname%3Ddproxy.v0.3.1-darwin64.zip)
 
 
 # 运行参数
@@ -16,15 +16,11 @@
 ```
 -debug 打开调试模式，beego设置为DEV模式，静态资源调用statik，关闭时，beego设置为PROD模式，静态资源使用web/static路径资源。默认：false
 
--as 启动应用时自动启动所有端口映射任务。默认：false
-
--ao 启动应用时自动打开浏览器进行访问。默认：true
+-mode 运行模式：server：API模式，不提供WebUI界面，自动运行所有端口映射任务；web：Web模式；默认：web
 
 -ip 应用监听IP地址。默认：127.0.0.1
 
 -port 应用监听端口。默认：8080
-
--ui 是否打开WebUI管理界面服务。默认：true
 
 -prefix WebUI的路径前缀，默认空
 
@@ -86,6 +82,15 @@ go get -u github.com/mattn/go-sqlite3
 ```
 
 # 更新日志
+
+2017-08-23 v0.3.1
+
+* 修改启动参数，精简为 mode 的设置形式
+* 增加App模式(webview)，跨平台有兼容问题，入口暂时屏蔽
+* 白名单现在可以设置和修改过期时间了
+* 优化请求代理的错误处理
+
+---
 
 2017-08-21 v0.2.2
 
