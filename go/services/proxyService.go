@@ -158,30 +158,19 @@ func (s *proxyService) Start(portMapID int64) error {
 				// server -> client
 				go func() {
 					_, err := io.Copy(clientConn, serverConn)
-					if err == nil {
-						//服务端EOF，关闭客户端连接
-						clientConn.Close()
-					} else {
-						if strings.Contains(err.Error(), "use of closed network connection") {
-							clientConn.Close()
-						} else {
-							logger.Error("服务响应接收失败：", err)
-						}
+					if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
+						logger.Error("服务响应接收失败：", err)
 					}
+
+					//服务端EOF 或 发生错误，均尝试关闭客户端连接
+					clientConn.Close()
 				}()
 
 				// client -> server
 				go func() {
 					_, err := io.Copy(serverConn, clientConn)
-					if err == nil {
-						//客户端EOF，关闭服务端连接
-						serverConn.Close()
-					} else {
-						if strings.Contains(err.Error(), "use of closed network connection") {
-							serverConn.Close()
-						} else {
-							logger.Error("代理请求发送失败：", err)
-						}
+					if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
+						logger.Error("代理请求发送失败：", err)
 					}
 
 					//本次请求结束
