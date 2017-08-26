@@ -4,11 +4,11 @@
 
 `注意：目前仅实现部份场景下的应用，功能并未完全实现，开源出来交流学习`
 
-# 已编译平台
+# 已编译平台(go1.9编译)
 
-[dproxy.v0.3.1-win64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=91899&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBE%2FPaAvDFmc8dWABEFsAHx64EyJo7U983.zip%3Ftoken%3D699264155087375fb9f3d8ea2daabaca%26ts%3D1503457749%26attname%3Ddproxy.v0.3.1-win64.zip)
+[dproxy.v0.3.2-win64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=92441&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FC4%2FPaAvDFmgyzmAdNz8AI2NkJJek4w645.zip%3Ftoken%3D9e708713ce15ec3742dbb2fd03d8d331%26ts%3D1503710010%26attname%3Ddproxy.v0.3.2-win64.zip)
 
-[dproxy.v0.3.1-darwin64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=91897&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FBE%2FPaAvDFmc8KGAcnyWAHx64NUmtPg562.zip%3Ftoken%3De4d3fd360fad233cf2c6be1211d3fadd%26ts%3D1503457749%26attname%3Ddproxy.v0.3.1-darwin64.zip)
+[dproxy.v0.3.2-darwin64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=92440&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FC4%2FPaAvDFmgyl2AfgPCAJs9F6U9POg114.zip%3Ftoken%3Da0ce4f9e35db771524a51cd7289bbc98%26ts%3D1503710010%26attname%3Ddproxy.v0.3.2-darwin64.zip)
 
 
 # 运行参数
@@ -41,7 +41,7 @@
 
 ## Backend
 
-语言 Go 1.8.3
+语言 Go 1.9
 
 Web/API开发框架 Beego 1.9
 
@@ -82,6 +82,13 @@ go get -u github.com/mattn/go-sqlite3
 ```
 
 # 更新日志
+
+2017-08-26 v0.3.2
+
+* 优化代理逻辑
+* 采用go1.9编译
+
+---
 
 2017-08-23 v0.3.1
 
