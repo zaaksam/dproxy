@@ -109,78 +109,78 @@ func (s *proxyService) Start(portMapID int64) error {
 
 		go func() {
 			for {
-				//创建 client
+				//监听请求
 				clientConn, err := p.listener.Accept()
 				if err != nil {
-					if !strings.Contains(err.Error(), "use of closed network connection") {
-						logger.Error("客户端请求响应失败：", err)
-					}
+					logger.Error("客户端请求响应失败：", err)
 					break
 				}
 
-				//白名单检查
-				clientAddr := strings.ToLower(clientConn.RemoteAddr().String())
-				ip := strings.Split(clientAddr, ":")[0]
-				if !WhiteList.Check(ip) {
-					clientConn.Close()
-
-					logger.Warning("非法请求：", clientAddr, "->", sourceAddr, "(", targetAddr, ")")
-					continue
-				}
-
-				//创建 server
-				serverConn, err := net.DialTimeout("tcp", targetAddr, 30*time.Second)
-				if err != nil {
-					clientConn.Close()
-
-					logger.Error("服务端请求响应失败：", err)
-					break
-				}
-
-				//注册客户端
-				invalidChan := p.addClient(ip)
-				//代理停止命令监测
-				endChan := make(chan bool)
-				go func() {
-					select {
-					case <-p.stopChan:
-						//代理停止命令
-					case <-invalidChan:
-						//白名单失效通知，可能删除，可能过期
-					case <-endChan:
-						//单次请求连接结束通知
-					}
-
-					//关闭服务端连接，忽略各种状态判断，作为补充措施
-					serverConn.Close()
-				}()
-
-				// server -> client
-				go func() {
-					_, err := io.Copy(clientConn, serverConn)
-					if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-						logger.Error("服务响应接收失败：", err)
-					}
-
-					//服务端EOF 或 发生错误，均尝试关闭客户端连接
-					clientConn.Close()
-				}()
-
-				// client -> server
-				go func() {
-					_, err := io.Copy(serverConn, clientConn)
-					if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-						logger.Error("代理请求发送失败：", err)
-					}
-
-					//本次请求结束
-					close(endChan)
-				}()
+				go s.Serve(p, clientConn, sourceAddr, targetAddr)
 			}
 		}()
 	}
 
 	return nil
+}
+
+func (s *proxyService) Serve(p *proxy, clientConn net.Conn, sourceAddr, targetAddr string) {
+	defer clientConn.Close()
+
+	//白名单检查
+	clientAddr := strings.ToLower(clientConn.RemoteAddr().String())
+	ip := strings.Split(clientAddr, ":")[0]
+	if !WhiteList.Check(ip) {
+		logger.Warning("非法请求：", clientAddr, "->", sourceAddr, "(", targetAddr, ")")
+		return
+	}
+
+	//创建 server
+	serverConn, err := net.DialTimeout("tcp", targetAddr, 30*time.Second)
+	if err != nil {
+		logger.Error("服务端请求响应失败：", err)
+		return
+	}
+	defer serverConn.Close()
+
+	//注册客户端
+	invalidChan := p.addClient(ip)
+
+	//代理停止命令监测
+	endChan := make(chan bool)
+	go func() {
+		select {
+		case <-p.stopChan:
+			//代理停止命令
+			serverConn.Close()
+		case <-invalidChan:
+			//白名单失效通知，可能删除，可能过期
+			serverConn.Close()
+		case <-endChan:
+			//单次请求连接结束通知
+		}
+	}()
+	defer close(endChan)
+
+	errc := make(chan error, 2)
+	cp := func(dst io.Writer, src io.Reader, info string) {
+		_, err := io.Copy(dst, src)
+		if err != nil {
+			if err == io.EOF || strings.Contains(err.Error(), "use of closed network connection") {
+				err = nil
+			} else {
+				err = errors.New(info + "失败：" + err.Error())
+			}
+		}
+		errc <- err
+	}
+
+	go cp(serverConn, clientConn, "代理请求发送")
+	go cp(clientConn, serverConn, "服务响应接收")
+	err = <-errc
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 func (s *proxyService) Stop(portMapID int64) {
