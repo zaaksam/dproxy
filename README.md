@@ -39,39 +39,9 @@
 
 # 技术资源
 
-## Backend
+Backend Go + beego
 
-语言 Go 1.9
-
-Web/API开发框架 Beego 1.9
-
-ORM框架 Xorm 0.6.2
-
-数据库 sqlite3
-
-静态资源打包工具 statik
-
-依赖管理工具 govendor
-
-## Frontend
-
-语言 Typescript 2.4.2
-
-JS框架 Vue 2.4.2
-
-路由 Vue-Router 2.7.0
-
-UI框架 iView 2.0.0
-
-网络请求 axios 0.16.2
-
-工具库 lodash 4.17.4
-
-日期时间库 moment 2.18.1
-
-打包工具 webpack 3.4.1
-
-依赖管理工具 yarn
+Frontend Typescript + Vue + iView
 
 # 注意
 
@@ -82,6 +52,16 @@ go get -u github.com/mattn/go-sqlite3
 ```
 
 # 更新日志
+
+2017-09-12 v0.3.3
+
+* 重写声明文件
+* 拆分webpack为dev、prod环境
+* 前端重构，并使用async/await
+* Log增加删除功能
+* 升级相关依赖项
+
+---
 
 2017-08-26 v0.3.2
 
