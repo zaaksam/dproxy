@@ -1,16 +1,17 @@
 {
   "name": "dproxy",
-  "version": "0.1.0",
+  "version": "0.3.3",
   "description": "for develop",
   "main": "index.js",
   "author": "Zaaksam",
   "license": "MIT",
   "scripts": {
-    "webpack": "webpack --config webpack.config.js"
+    "dev": "webpack --config webpack.config.dev.js",
+    "prod": "webpack --config webpack.config.prod.js"
   },
   "dependencies": {
     "axios": "^0.16.2",
-    "iview": "^2.0.0",
+    "iview": "^2.3.2",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "vue": "^2.4.2",
@@ -21,14 +22,15 @@
     "css-loader": "^0.28.4",
     "file-loader": "^0.11.2",
     "style-loader": "^0.18.2",
-    "ts-loader": "^2.3.2",
-    "typescript": "^2.4.2",
+    "ts-loader": "^2.3.6",
+    "typescript": "^2.5.2",
     "url-loader": "^0.5.9",
     "vue-class-component": "^5.0.2",
     "vue-loader": "^13.0.2",
     "vue-property-decorator": "^5.2.1",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.4.2",
-    "webpack": "^3.4.1"
+    "webpack": "^3.5.6",
+    "webpack-merge": "^4.1.0"
   }
 }
