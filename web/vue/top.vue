@@ -1,12 +1,12 @@
 <template>
     <Menu mode="horizontal" theme="dark" :active-name="activeName" @on-select="onSelect">
-        <div class="layout-logo">{{title}}</div>
+        <div class="layout-logo">{{ title }}</div>
         <div class="layout-nav">
-            <Menu-item name="whiteList">
+            <Menu-item name="whitelist">
                 <Icon type="ios-navigate"></Icon>
                 白名单管理
             </Menu-item>
-            <Menu-item name="portMap">
+            <Menu-item name="portmap">
                 <Icon type="arrow-swap"></Icon>
                 端口映射
             </Menu-item>
@@ -45,15 +45,14 @@
 
 
 <script lang="ts">
-import Vue from 'vue'
+import { Vue, Component } from 'vue-property-decorator'
 import VueRouter from 'vue-router'
 import _ from 'lodash'
-import { Component } from 'vue-property-decorator'
 
 @Component
 export default class MyTop extends Vue {
     title: string = globalConfig.appName + ' ' + globalConfig.appVersion
-    activeName: string = 'whiteList'
+    activeName: string = 'whitelist'
 
     mounted() {
         let name = _.last(_.split(this.$route.path, '/'))

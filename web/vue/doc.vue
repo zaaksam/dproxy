@@ -54,9 +54,8 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import { Vue, Component } from 'vue-property-decorator'
 import _ from 'lodash'
-import { Component } from 'vue-property-decorator'
 
 interface docModel {
     alias: string

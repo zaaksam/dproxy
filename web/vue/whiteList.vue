@@ -1,17 +1,8 @@
 <template>
     <div>
-        <Row>
-            <Col span="20">
-            <MyPage :total="table.list.total" :pageIndex="table.list.pageIndex" :pageSize="table.list.pageSize" @onLoad="onLoad"></MyPage>
-            </Col>
-            <Col push="3" span="1">
-            <div style="padding:0px 0px 10px 0px;">
-                <Button @click="onModalShow" type="primary" icon="plus-round"></Button>
-            </div>
-            </Col>
-        </Row>
-        <Table stripe border :columns="table.columns" :data="table.list.items">
+        <Table stripe border :columns="tableColumns" :data="tableData.items">
         </Table>
+        <MyPage :total="tableData.total" :pageIndex="tableData.pageIndex" :pageSize="tableData.pageSize" @onChange="onLoad"></MyPage>
         <Modal :title="modal.title" v-model="modal.isShow" :mask-closable="false" :closable="false">
             <Form :label-width="100">
                 <Form-item label="白名单ID" v-show="modal.isEdit">
@@ -41,11 +32,9 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { Component } from 'vue-property-decorator'
+import { Vue, Component } from 'vue-property-decorator'
 import _ from 'lodash'
 import moment from 'moment'
-import Axios, { AxiosResponse, AxiosError } from 'axios'
 import MyPage from './page.vue'
 import API from '../ts/api'
 
@@ -60,15 +49,6 @@ interface modalDataModel {
 interface modalModel extends BaseModalModel {
     expiredStr: string
     data: modalDataModel
-}
-
-interface listModel extends BaseListModel {
-    items: WhiteListModel[]
-}
-
-interface tableModel {
-    columns: any[]
-    list: listModel
 }
 
 @Component({
@@ -100,144 +80,153 @@ export default class MyWhiteList extends Vue {
             return date && date.valueOf() < Date.now()
         }
     }
-    table: tableModel = {
-        list: {
-            total: 0,
-            pageIndex: 1,
-            pageSize: 10,
-            pageCount: 0,
-            items: <WhiteListModel[]>[],
-        },
-        columns: <any[]>[
-            {
-                title: 'ID',
-                key: 'id'
-            },
-            {
-                title: 'IP',
-                key: 'ip'
-            },
-            {
-                title: '申请人ID',
-                key: 'userID'
-            },
-            {
-                title: '申请人名称',
-                key: 'userName'
-            },
-            {
-                title: '申请时间',
-                key: 'created',
-                render: (h: Vue.CreateElement, params: any): Vue.VNode => {
-                    return h('span', moment.unix(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
-                }
-            },
-            {
-                title: '过期时间',
-                key: 'expired',
-                render: (h: Vue.CreateElement, params: any): Vue.VNode => {
-                    return h('span', moment.unix(params.row.expired).format('YYYY-MM-DD HH:mm:ss'))
-                }
-            },
-            {
-                title: '操作',
-                width: 160,
-                render: (h: Vue.CreateElement, params: any): Vue.VNode => {
-                    return h('div', [
-                        h('Button', {
-                            props: {
-                                icon: 'edit',
-                                type: 'info'
-                            },
-                            style: {
-                                marginRight: '10px'
-                            },
-                            on: {
-                                click: () => {
-                                    this.onEdit(params.index)
-                                }
-                            }
-                        }),
-                        h('Poptip', {
-                            props: {
-                                confirm: true,
-                                placement: 'left',
-                                title: '您确认要删除这条内容吗？'
-                            },
-                            on: {
-                                'on-ok': () => {
-                                    this.onDel(params.index)
-                                }
-                            }
-                        }, [
-                                h('Button', {
-                                    props: {
-                                        icon: 'close-round',
-                                        type: 'error'
-                                    }
-                                })
-                            ])
 
-                    ])
-                }
-            }
-        ]
+    tableData: APIListModel<Model.WhiteList> = {
+        pageIndex: 1,
+        pageSize: 10,
+        pageCount: 0,
+        total: 0,
+        items: []
     }
+
+    tableColumns: any[] = [
+        {
+            title: 'ID',
+            key: 'id'
+        },
+        {
+            title: 'IP',
+            key: 'ip'
+        },
+        {
+            title: '申请人ID',
+            key: 'userID'
+        },
+        {
+            title: '申请人名称',
+            key: 'userName'
+        },
+        {
+            title: '申请时间',
+            key: 'created',
+            render: (h: Vue.CreateElement, params: any) => {
+                return h('span', moment.unix(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
+            }
+        },
+        {
+            title: '过期时间',
+            key: 'expired',
+            render: (h: Vue.CreateElement, params: any) => {
+                return h('span', moment.unix(params.row.expired).format('YYYY-MM-DD HH:mm:ss'))
+            }
+        },
+        {
+            width: 160,
+            renderHeader: (h: Vue.CreateElement, params: any) => {
+                return h('Button', {
+                    props: {
+                        size: 'small',
+                        type: 'primary',
+                        icon: 'plus-round'
+                    },
+                    on: {
+                        click: () => {
+                            this.onModalShow()
+                        }
+                    }
+                })
+            },
+            render: (h: Vue.CreateElement, params: any) => {
+                return h('div', [
+                    h('Button', {
+                        props: {
+                            size: 'small',
+                            icon: 'edit',
+                            type: 'info'
+                        },
+                        style: {
+                            marginRight: '10px'
+                        },
+                        on: {
+                            click: () => {
+                                this.onEdit(params.index)
+                            }
+                        }
+                    }),
+                    h('Poptip', {
+                        props: {
+                            confirm: true,
+                            placement: 'left',
+                            title: '您确认要删除这条内容吗？'
+                        },
+                        on: {
+                            'on-ok': () => {
+                                this.onDel(params.index)
+                            }
+                        }
+                    }, [
+                            h('Button', {
+                                props: {
+                                    size: 'small',
+                                    icon: 'close-round',
+                                    type: 'error'
+                                }
+                            })
+                        ])
+
+                ])
+            }
+        }
+    ]
 
     mounted() {
         this.onLoad()
     }
 
-    onLoad() {
+    async onLoad() {
         let pi = _.parseInt(this.$route.query.pi)
         let ps = _.parseInt(this.$route.query.ps)
         if (_.isNaN(pi)) {
-            pi = this.table.list.pageIndex
+            pi = this.tableData!.pageIndex
         }
         if (_.isNaN(ps)) {
-            ps = this.table.list.pageSize
+            ps = this.tableData!.pageSize
         }
 
-        Axios.get(API.initURL('/api/whitelist/list'), { params: { pageIndex: pi, pageSize: ps } })
-            .then((res: AxiosResponse) => {
-                this.table.list = <listModel>res.data.data.list
+        let pms = new URLSearchParams()
+        pms.append('pageIndex', pi.toString())
+        pms.append('pageSize', ps.toString())
 
-                if (res.data.code === 90000) {
-                    this.$Message.error({ duration: 5, content: res.data.msg + '(' + res.data.code.toString() + ')' })
-                }
-            })
-            .catch((err: AxiosError) => {
-                this.$Message.error({ duration: 5, content: err.message + '(' + err.code + ')' })
-            })
+        let result = await API.get<Model.WhiteLists>('/whitelist/list/?' + pms.toString())
+        if (result.code === 10000) {
+            this.tableData = result.data!.list
+        } else {
+            this.$Message.error({ duration: 5, content: result.msg + '(' + result.code.toString() + ')' })
+        }
     }
 
     onEdit(index: number) {
-        let data = this.table.list.items[index]
+        let data = this.tableData!.items[index]
         if (data) {
-            this.onModalShow('', data)
+            this.onModalShow(data)
         }
     }
 
-    onDel(index: number) {
-        let id: number = this.table.list.items[index].id!
+    async onDel(index: number) {
+        let id: number = this.tableData!.items[index].id!
         if (!id) {
             return
         }
 
-        Axios.delete(API.initURL('/api/whitelist/' + id.toString()))
-            .then((res: AxiosResponse) => {
-                if (res.data.code === 10000) {
-                    this.onLoad()
-                } else {
-                    this.$Message.error({ duration: 5, content: res.data.msg + '(' + res.data.code.toString() + ')' })
-                }
-            })
-            .catch((err: AxiosError) => {
-                this.$Message.error({ duration: 5, content: err.message + '(' + err.code + ')' })
-            })
+        let result = await API.delete<any>('/whitelist/' + id.toString())
+        if (result.code === 10000) {
+            this.onLoad()
+        } else {
+            this.$Message.error({ duration: 5, content: result.msg + '(' + result.code.toString() + ')' })
+        }
     }
 
-    onModalShow(event: any, data?: WhiteListModel) {
+    onModalShow(data?: Model.WhiteList) {
         this.modal.isShow = true
         this.modal.isLoading = false
         this.modal.isErr = false
@@ -278,7 +267,7 @@ export default class MyWhiteList extends Vue {
         }
     }
 
-    onModalOk() {
+    async onModalOk() {
         this.modal.isErr = false
         this.modal.errMsg = ''
 
@@ -302,26 +291,21 @@ export default class MyWhiteList extends Vue {
             id = '/' + this.modal.data.id.toString()
         }
 
-        Axios.put(API.initURL('/api/whitelist' + id), this.modal.data)
-            .then((res: AxiosResponse) => {
-                if (res.data.code === 10000) {
-                    if (this.modal.data.id > 0) {
-                        this.onLoad()
-                    } else {
-                        this.table.list.items.unshift(<WhiteListModel>res.data.data.whiteList)
-                        this.table.list.total += 1
-                    }
-                    this.modal.isShow = false
-                } else {
-                    this.modal.errMsg = res.data.msg + '(' + res.data.code.toString() + ')'
-                    this.modal.isErr = true
-                }
-                this.modal.isLoading = false
-            }).catch((err: AxiosError) => {
-                this.modal.errMsg = err.message + '(' + err.code + ')'
-                this.modal.isErr = true
-                this.modal.isLoading = false
-            })
+        let result = await API.put<Model.WhiteListAlias>('/whitelist' + id, this.modal.data)
+        if (result.code === 10000) {
+            if (this.modal.data.id > 0) {
+                this.onLoad()
+            } else {
+                this.tableData!.items.unshift(result.data!.whiteList)
+                this.tableData!.total += 1
+            }
+            this.modal.isShow = false
+        } else {
+            this.$Message.error({ duration: 5, content: result.msg + '(' + result.code.toString() + ')' })
+            this.modal.errMsg = result.msg + '(' + result.code.toString() + ')'
+            this.modal.isErr = true
+        }
+        this.modal.isLoading = false
     }
 
     onModalCancel() {

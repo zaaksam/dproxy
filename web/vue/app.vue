@@ -59,8 +59,7 @@ body {
 </style>
 
 <script lang="ts">
-import Vue from 'vue'
-import { Component } from 'vue-property-decorator'
+import { Vue, Component } from 'vue-property-decorator'
 import MyTop from './top.vue'
 import MyBottom from './bottom.vue'
 

@@ -1,12 +1,18 @@
 <template>
-    <Page :total="total" :current="pageIndex" :page-size="pageSize" @on-change="onPageChange" @on-page-size-change="onPageSizeChange" show-total show-sizer>
+    <Page class="myPage" :total="total" :current="pageIndex" :page-size="pageSize" @on-change="onPageChange" @on-page-size-change="onPageSizeChange" placement="top" show-total show-sizer>
     </Page>
 </template>
 
+<style>
+.myPage {
+    height: 60px;
+    line-height: 60px;
+}
+</style>
+
 <script lang="ts">
-import Vue from 'vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import VueRouter from 'vue-router'
-import { Component, Prop } from 'vue-property-decorator'
 
 @Component
 export default class MyPage extends Vue {
@@ -24,17 +30,17 @@ export default class MyPage extends Vue {
         }
         url += 'pi=' + pi.toString()
         this.$router.replace(url)
-        this.onLoad()
+        this.onChange()
     }
 
     onPageSizeChange(ps: number) {
         let url = this.$route.path + '?ps=' + ps.toString() + '&pi=1'
         this.$router.replace(url)
-        this.onLoad()
+        this.onChange()
     }
 
-    onLoad() {
-        this.$emit('onLoad')
+    onChange() {
+        this.$emit('onChange')
     }
 }
 </script>
