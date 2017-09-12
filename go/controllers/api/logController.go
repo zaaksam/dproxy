@@ -24,3 +24,15 @@ func (c *LogController) List() {
 
 	c.SetData("list", list)
 }
+
+// Delete 删除白名单记录
+func (c *LogController) Delete() {
+	typ := c.GetString("type")
+	created, _ := c.GetInt64("created")
+	content := c.GetString("content")
+
+	err := services.Log.Delete(typ, created, content)
+	if err != nil {
+		c.SetError(err)
+	}
+}

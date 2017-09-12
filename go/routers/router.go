@@ -3,7 +3,6 @@ package routers
 import (
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -21,14 +20,15 @@ func init() {
 	beego.ErrorController(&controllers.ErrController{})
 
 	api := beego.NewNamespace("/api",
-		beego.NSRouter("/whitelist/?:id:int", &api.WhiteListController{}),
 		beego.NSRouter("/whitelist/list", &api.WhiteListController{}, "get:List"),
 		beego.NSRouter("/whitelist/getip", &api.WhiteListController{}, "get:GetIP"),
-		beego.NSRouter("/portmap/?:id:int", &api.PortMapController{}),
+		beego.NSRouter("/whitelist/?:id:int", &api.WhiteListController{}),
 		beego.NSRouter("/portmap/list", &api.PortMapController{}, "get:List"),
+		beego.NSRouter("/portmap/?:id:int", &api.PortMapController{}),
 		beego.NSRouter("/proxy/start/:id:int", &api.ProxyController{}, "get:Start"),
 		beego.NSRouter("/proxy/stop/:id:int", &api.ProxyController{}, "get:Stop"),
 		beego.NSRouter("/log/list", &api.LogController{}, "get:List"),
+		beego.NSRouter("/log", &api.LogController{}),
 	)
 
 	if config.AppConf.IsServerMode {
@@ -38,10 +38,10 @@ func init() {
 	}
 
 	web := beego.NewNamespace("/web", beego.NSRouter("/*", &controllers.WebController{}))
-
 	var staticHandler http.Handler
 	if config.AppConf.Debug {
-		dir := path.Dir(os.Args[0])
+		// dir := path.Dir(os.Args[0])
+		dir, _ := os.Getwd()
 		dir = filepath.ToSlash(dir) // .../dproxy/go
 		dirs := strings.Split(dir, "/")
 		dir = strings.Join(dirs[0:len(dirs)-1], "/") // .../dproxy
