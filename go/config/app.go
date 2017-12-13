@@ -17,8 +17,8 @@ func init() {
 	flag.BoolVar(&AppConf.Debug, "debug", false, "调试模式，默认：false")
 	flag.StringVar(&AppConf.IP, "ip", "", "监听的IP地址，默认：127.0.0.1")
 	flag.IntVar(&AppConf.Port, "port", 0, "服务端口，默认：随机")
-	// flag.StringVar(&mode, "mode", "web", "运行模式：server：API服务模式；web：Web模式；app：App模式(试验)，默认：web")
-	flag.StringVar(&mode, "mode", "web", "运行模式：server：API服务模式；web：Web模式；默认：web")
+	flag.StringVar(&mode, "mode", "app", "运行模式：server：API服务模式；web：Web模式；app：App模式(试验)，默认：app")
+	// flag.StringVar(&mode, "mode", "web", "运行模式：server：API服务模式；web：Web模式；默认：web")
 	flag.StringVar(&AppConf.PrefixPath, "prefix", "", "Web模式下有效，WebUI的路径前缀，默认为空")
 	flag.StringVar(&AppConf.Token, "token", "", "API授权令牌，为空时不校验，默认为空")
 	flag.Parse()
@@ -47,7 +47,7 @@ func init() {
 	}
 
 	AppConf.Name = "dproxy"
-	AppConf.Version = "0.3.3"
+	AppConf.Version = "0.4.0"
 	AppConf.Started = time.Now().Unix()
 }
 
