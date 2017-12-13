@@ -13,6 +13,7 @@ import (
 	_ "github.com/zaaksam/dproxy/go/db"
 	_ "github.com/zaaksam/dproxy/go/routers"
 	"github.com/zaaksam/dproxy/go/services"
+	"github.com/zserge/webview"
 )
 
 func main() {
@@ -48,17 +49,16 @@ func main() {
 		go openBrowser()
 
 		beego.Run()
+	} else if config.AppConf.IsAppMode {
+		logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (App模式) ，关闭此窗口即可退出程序 ======")
+
+		go beego.Run()
+
+		err := webview.Open("DProxy", fmt.Sprintf("http://%s:%d/web", config.AppConf.IP, config.AppConf.Port), 960, 600, false)
+		if err != nil {
+			logs.Critical("webview启动失败：", err)
+		}
 	}
-	// else if config.AppConf.IsAppMode {
-	// 	logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (App模式) ，关闭此窗口即可退出程序 ======")
-
-	// 	go beego.Run()
-
-	// 	err := webview.Open("DProxy", fmt.Sprintf("http://%s:%d/web", config.AppConf.IP, config.AppConf.Port), 960, 600, false)
-	// 	if err != nil {
-	// 		logs.Critical("webview启动失败：", err)
-	// 	}
-	// }
 }
 
 func openBrowser() {

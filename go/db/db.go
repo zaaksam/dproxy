@@ -11,6 +11,7 @@ import (
 	"github.com/zaaksam/dproxy/go/model"
 )
 
+// IModel 模型接口
 type IModel interface {
 	TableName() string
 	NewItems() interface{}
@@ -74,7 +75,7 @@ func createTable(beans ...xorm.TableName) (err error) {
 // NewSession 创建新的数据库操作对象
 func NewSession() *xorm.Session {
 	session := Engine.NewSession()
-	session.IsAutoClose = true
+	session.IsAutoClose(true)
 	return session
 }
 
@@ -90,11 +91,13 @@ func GetList(session *xorm.Session, md IModel, pageIndex, pageSize int) (list *m
 	sessionCount := session.Clone()
 	defer sessionCount.Close()
 
-	//清空Orderby条件，在某些数据库count不能带orderby
-	sessionCount.Statement.OrderStr = ""
+	statement := sessionCount.Statement()
 
-	if groupBy := sessionCount.Statement.GroupByStr; groupBy != "" {
-		sessionCount.Statement.GroupByStr = "" // count不能带groupby
+	//清空Orderby条件，在某些数据库count不能带orderby
+	statement.OrderStr = ""
+
+	if groupBy := statement.GroupByStr; groupBy != "" {
+		statement.GroupByStr = "" // count不能带groupby
 		list.Total, err = sessionCount.Select("count(DISTINCT " + groupBy + ")").Count(md)
 	} else {
 		sessionCount.Select("") // select置空

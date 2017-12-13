@@ -11,10 +11,12 @@ import (
 	"github.com/zaaksam/dproxy/go/views"
 )
 
+// WebController web页面控制器
 type WebController struct {
 	beego.Controller
 }
 
+// Get Get请求页面
 func (c *WebController) Get() {
 	var unix int64
 	if config.AppConf.Debug {

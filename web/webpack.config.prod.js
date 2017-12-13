@@ -9,10 +9,6 @@ module.exports = merge(webpackBaseConfig, {
                 NODE_ENV: '"production"'
             }
         }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            minChunks: Infinity
-        }),
         new webpack.optimize.UglifyJsPlugin({
             sourceMap: false,
             compress: {

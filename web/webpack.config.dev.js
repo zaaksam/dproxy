@@ -8,18 +8,6 @@ module.exports = merge(webpackBaseConfig, {
             'process.env': {
                 NODE_ENV: '"development"'
             }
-        }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            minChunks: Infinity
-        }),
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true,
-            compress: {
-                warnings: false
-            },
-            // 混淆
-            mangle: false
         })
     ],
     devtool: 'source-map'

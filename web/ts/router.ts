@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
+import VueRouter, { RouteConfig } from 'vue-router'
 
 import MyWhiteList from '../vue/whitelist.vue'
 import MyPortMap from '../vue/portmap.vue'
@@ -8,7 +8,7 @@ import MyDoc from '../vue/doc.vue'
 
 Vue.use(VueRouter)
 
-const routes = <VueRouter.RouteConfig[]>[
+const routes = <RouteConfig[]>[
     { path: globalConfig.prefixPath + '/web/whitelist', name: 'whitelist', component: MyWhiteList },
     { path: globalConfig.prefixPath + '/web/portmap', name: 'portmap', component: MyPortMap },
     { path: globalConfig.prefixPath + '/web/log', name: 'log', component: MyLog },
