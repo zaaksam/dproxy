@@ -24,7 +24,7 @@ deleteJS(jsDir);
 
 module.exports = {
     entry: {
-        vendor: ['vue', 'vue-router', 'lodash', 'axios', 'moment', 'iview-style', 'iview'],
+        vendor: ['vue', 'vue-router', 'iview-style', 'iview', 'lodash', 'axios', 'moment'],
         app: ['./ts/main.ts']
     },
     output: {
@@ -68,6 +68,12 @@ module.exports = {
                 }
             }
         ]
-    }
+    },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: Infinity
+        })
+    ]
 }
 
