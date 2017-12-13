@@ -1,14 +1,10 @@
 # dproxy
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/zaaksam/dproxy)](https://goreportcard.com/report/github.com/zaaksam/dproxy)
+
 简易的网络代理工具，带有IP白名单限制管，带有简洁的UI管理界面，提供丰富的API接口，可方便的与各个系统集成，可编译为单文件运行
 
 `注意：目前仅实现部份场景下的应用，功能并未完全实现，开源出来交流学习`
-
-# 已编译平台(go1.9编译)
-
-[dproxy.v0.3.2-win64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=92441&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FC4%2FPaAvDFmgyzmAdNz8AI2NkJJek4w645.zip%3Ftoken%3D9e708713ce15ec3742dbb2fd03d8d331%26ts%3D1503710010%26attname%3Ddproxy.v0.3.2-win64.zip)
-
-[dproxy.v0.3.2-darwin64.zip](https://gitee.com/zaaksam/dproxy/attach_files/download?i=92440&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FC4%2FPaAvDFmgyl2AfgPCAJs9F6U9POg114.zip%3Ftoken%3Da0ce4f9e35db771524a51cd7289bbc98%26ts%3D1503710010%26attname%3Ddproxy.v0.3.2-darwin64.zip)
 
 
 # 运行参数
@@ -29,13 +25,13 @@
 
 # 界面预览
 
-![](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=89952&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FA6%2FPaAvDFmJdUiANn77AAEfwxkjjsI886.png%3Ftoken%3D49dc2684cf356f1a51f522042e86245a%26ts%3D1502533216%26attname%3Dportmap.png)
+![](https://static.oschina.net/uploads/img/201712/13181727_jyz0.png)
 
-![](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=89953&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FA6%2FPaAvDFmJdViAOjEfAAC0dKxZmo4230.png%3Ftoken%3D848e73a93bac218decca2378fb08a0bb%26ts%3D1502533216%26attname%3Dwhitelist.png)
+![](https://static.oschina.net/uploads/img/201712/13181739_ULte.png)
 
-![](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=89954&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FA6%2FPaAvDFmJdWOABwLKAAEDyxfwF6c412.png%3Ftoken%3Daf7eb35b608885c4b448261dd7610bb7%26ts%3D1502533216%26attname%3Dlog.png)
+![](https://static.oschina.net/uploads/img/201712/13181748_RkMe.png)
 
-![](http://git.oschina.net/zaaksam/dproxy/attach_files/download?i=89955&u=http%3A%2F%2Ffiles.git.oschina.net%2Fgroup1%2FM00%2F01%2FA6%2FPaAvDFmJdW-AUgTEAAC0zMqe6dI445.png%3Ftoken%3Daf6f3fd0c2065e82efac837617f55bd6%26ts%3D1502533216%26attname%3Ddoc.png)
+![](https://static.oschina.net/uploads/img/201712/13181825_v0Lo.png)
 
 # 技术资源
 
@@ -52,6 +48,12 @@ go get -u github.com/mattn/go-sqlite3
 ```
 
 # 更新日志
+
+2017-12-13 v0.4.0
+
+* 更新go依赖项
+* 更新web依赖项，优化编译配置文件
+* 增加App（webview，默认）独立运行模式
 
 2017-09-12 v0.3.3
 
