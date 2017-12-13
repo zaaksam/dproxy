@@ -1,5 +1,6 @@
 package views
 
+// Index html content
 const Index = `
 <!DOCTYPE html>
 <html>

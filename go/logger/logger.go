@@ -26,7 +26,7 @@ func Error(v ...interface{}) {
 	insert("Error", v...)
 }
 
-/// Warning 警告级别日志
+// Warning 警告级别日志
 func Warning(v ...interface{}) {
 	insert("Warning", v...)
 }

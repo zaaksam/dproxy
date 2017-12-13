@@ -11,6 +11,7 @@ import (
 	"github.com/zaaksam/dproxy/go/model"
 )
 
+// IModel 模型接口
 type IModel interface {
 	TableName() string
 	NewItems() interface{}

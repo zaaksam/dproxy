@@ -13,6 +13,7 @@ import (
 	"github.com/zaaksam/dproxy/go/config"
 	"github.com/zaaksam/dproxy/go/controllers"
 	"github.com/zaaksam/dproxy/go/controllers/api"
+	// 加载静态资源
 	_ "github.com/zaaksam/dproxy/go/statik"
 )
 
