@@ -16,7 +16,7 @@
     "css-loader": "^0.28.4",
     "file-loader": "^1.1.5",
     "iview": "^2.7.4",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.13",
     "moment": "^2.19.4",
     "style-loader": "^0.19.0",
     "ts-loader": "^3.2.0",
