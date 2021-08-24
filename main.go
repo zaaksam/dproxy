@@ -9,11 +9,11 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/webview/webview"
 	"github.com/zaaksam/dproxy/go/config"
 	_ "github.com/zaaksam/dproxy/go/db"
 	_ "github.com/zaaksam/dproxy/go/routers"
 	"github.com/zaaksam/dproxy/go/services"
-	"github.com/zserge/webview"
 )
 
 func main() {
@@ -54,10 +54,18 @@ func main() {
 
 		go beego.Run()
 
-		err := webview.Open("DProxy", fmt.Sprintf("http://%s:%d/web", config.AppConf.IP, config.AppConf.Port), 960, 600, false)
-		if err != nil {
-			logs.Critical("webview启动失败：", err)
-		}
+		w := webview.New(config.AppConf.Debug)
+		w.SetTitle(config.AppConf.Name)
+		// Resizable: false
+		w.SetSize(960, 600, webview.HintFixed)
+		w.Navigate(fmt.Sprintf("http://%s:%d/web", config.AppConf.IP, config.AppConf.Port))
+
+		w.Run()
+
+		// err := webview.Open("DProxy", fmt.Sprintf("http://%s:%d/web", config.AppConf.IP, config.AppConf.Port), 960, 600, false)
+		// if err != nil {
+		// 	logs.Critical("webview启动失败：", err)
+		// }
 	}
 }
 
