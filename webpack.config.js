@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 
-function deleteJS(dir) {
+function deleteDir(dir) {
     var files = [];
     if (fs.existsSync(dir)) {
         files = fs.readdirSync(dir);
@@ -18,19 +18,23 @@ function deleteJS(dir) {
     }
 };
 
-//总是清除之前生成的文件
-var jsDir = path.resolve(__dirname, './static/js');
-deleteJS(jsDir);
+var isDev = false;
+if (process.env && process.env.NODE_ENV === 'dev') {
+    isDev = true;
+}
 
-module.exports = {
+//总是清除之前生成的文件
+var distDir = path.join(__dirname, 'web', 'static', 'js');
+deleteDir(distDir);
+
+var config = {
     entry: {
         vendor: ['vue', 'vue-router', 'iview-style', 'iview', 'lodash', 'axios', 'moment'],
-        app: ['./ts/main.ts']
+        app: ['./web/ts/main.ts']
     },
     output: {
         filename: '[name].min.js',
-        path: jsDir,
-        publicPath: '/static/js/'
+        path: distDir
     },
     resolve: {
         extensions: ['.ts', '.js', '.vue'],
@@ -38,7 +42,6 @@ module.exports = {
             'iview-style': 'iview/dist/styles/iview.css'
         }
     },
-    watch: true,
     module: {
         rules: [
             {
@@ -55,7 +58,6 @@ module.exports = {
             {
                 test: /\.ts$/,
                 loader: 'ts-loader',
-                exclude: /node_modules/,
                 options: {
                     appendTsSuffixTo: [/\.vue$/]
                 }
@@ -77,3 +79,37 @@ module.exports = {
     ]
 }
 
+if (isDev) {
+    config.watch = true;
+    config.devtool = '#cheap-module-eval-source-map';
+    config.plugins.unshift(
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: '"development"'
+            }
+        })
+    );
+} else {
+    config.plugins.unshift(
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: '"production"'
+            }
+        })
+    );
+    config.plugins.unshift(
+        new webpack.optimize.UglifyJsPlugin({
+            sourceMap: false,
+            compress: {
+                warnings: false
+            },
+            // 混淆
+            mangle: true
+        })
+    );
+
+    //生产模式，删除 go/statik 目录重新生成
+    deleteDir(path.join(__dirname, 'go', 'statik'));
+}
+
+module.exports = config;

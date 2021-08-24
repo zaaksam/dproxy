@@ -16,9 +16,9 @@
         "allowJs": true
     },
     "include": [
-        "./types/**/*",
-        "./ts/**/*",
-        "./vue/**/*"
+        "web/types/**/*",
+        "web/ts/**/*",
+        "web/vue/**/*"
     ],
     "exclude": []
 }
