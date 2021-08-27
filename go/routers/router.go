@@ -4,15 +4,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/logs"
 	"github.com/rakyll/statik/fs"
 	"github.com/zaaksam/dproxy/go/config"
+	"github.com/zaaksam/dproxy/go/constant"
 	"github.com/zaaksam/dproxy/go/controllers"
 	"github.com/zaaksam/dproxy/go/controllers/api"
+
 	// 加载静态资源
 	_ "github.com/zaaksam/dproxy/go/statik"
 )
@@ -21,6 +22,7 @@ func init() {
 	beego.ErrorController(&controllers.ErrController{})
 
 	api := beego.NewNamespace("/api",
+		beego.NSRouter("/whitelist/clear", &api.WhiteListController{}, "delete:Clear"),
 		beego.NSRouter("/whitelist/list", &api.WhiteListController{}, "get:List"),
 		beego.NSRouter("/whitelist/getip", &api.WhiteListController{}, "get:GetIP"),
 		beego.NSRouter("/whitelist/?:id:int", &api.WhiteListController{}),
@@ -30,9 +32,10 @@ func init() {
 		beego.NSRouter("/proxy/stop/:id:int", &api.ProxyController{}, "get:Stop"),
 		beego.NSRouter("/log/list", &api.LogController{}, "get:List"),
 		beego.NSRouter("/log", &api.LogController{}),
+		beego.NSRouter("/region/list", &api.RegionController{}, "get:List"),
 	)
 
-	if config.AppConf.IsServerMode {
+	if config.AppConf.Mode == constant.MODE_API {
 		//只开启API服务
 		beego.AddNamespace(api)
 		return
@@ -44,8 +47,8 @@ func init() {
 		// dir := path.Dir(os.Args[0])
 		dir, _ := os.Getwd()
 		dir = filepath.ToSlash(dir) // .../dproxy/go
-		dirs := strings.Split(dir, "/")
-		dir = strings.Join(dirs[0:len(dirs)-1], "/") // .../dproxy
+		// dirs := strings.Split(dir, "/")
+		// dir = strings.Join(dirs[0:len(dirs)-1], "/") // .../dproxy
 		staticHandler = http.StripPrefix("/static/", http.FileServer(http.Dir(dir+"/web/static")))
 	} else {
 		statikFS, err := fs.New()
