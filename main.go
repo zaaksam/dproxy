@@ -9,14 +9,18 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/webview/webview"
 	"github.com/zaaksam/dproxy/go/config"
+	"github.com/zaaksam/dproxy/go/constant"
 	_ "github.com/zaaksam/dproxy/go/db"
 	_ "github.com/zaaksam/dproxy/go/routers"
 	"github.com/zaaksam/dproxy/go/services"
 )
 
 func main() {
+	config.AppConf.Version = VERSION
+
 	beego.BConfig.AppName = config.AppConf.Name
 	beego.BConfig.ServerName = config.AppConf.Name
 	beego.BConfig.WebConfig.AutoRender = false
@@ -34,24 +38,26 @@ func main() {
 		beego.BConfig.RunMode = beego.PROD
 	}
 
-	if config.AppConf.IsServerMode {
-		logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (Server模式) ，关闭此窗口即可退出程序 ======")
+	regionTip := ""
+	if config.AppConf.Region != "" {
+		regionTip = "，" + config.AppConf.Region + " 区域"
+	}
+	logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (" + config.AppConf.Mode.ToString() + "模式" + regionTip + ") ，关闭此窗口即可退出程序 ======")
 
+	if config.AppConf.Mode == constant.MODE_APIUI || config.AppConf.Mode == constant.MODE_API {
 		err := services.Proxy.StartAll()
 		if err != nil {
 			logs.Error("端口映射任务启动失败：", err)
 		}
 
 		beego.Run()
-	} else if config.AppConf.IsWebMode {
-		logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (Web模式) ，关闭此窗口即可退出程序 ======")
 
+		services.Proxy.StopAll()
+	} else if config.AppConf.Mode == constant.MODE_WEB {
 		go openBrowser()
 
 		beego.Run()
-	} else if config.AppConf.IsAppMode {
-		logs.Info("====== 欢迎使用 " + config.AppConf.Name + " " + config.AppConf.Version + " (App模式) ，关闭此窗口即可退出程序 ======")
-
+	} else if config.AppConf.Mode == constant.MODE_APP {
 		go beego.Run()
 
 		w := webview.New(config.AppConf.Debug)
