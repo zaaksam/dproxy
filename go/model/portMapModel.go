@@ -1,8 +1,11 @@
 package model
 
+import "github.com/zaaksam/dproxy/go/constant"
+
 // PortMapModel 端口映射模型
 type PortMapModel struct {
 	ID         int64  `xorm:"pk" json:"id"`
+	Region     string `json:"region"`
 	Title      string `json:"title"`
 	TargetIP   string `json:"targetIP"`
 	TargetPort int    `json:"targetPort"`
@@ -13,7 +16,8 @@ type PortMapModel struct {
 	Created    int64  `json:"created"`
 	Updated    int64  `json:"updated"`
 	Deleted    int64  `xorm:"->" json:"-"`
-	IsStart    bool   `xorm:"-" json:"isStart"`
+	// IsStart    bool                      `xorm:"-" json:"isStart"`
+	State constant.PortmapStateType `json:"state"`
 }
 
 // TableName 表名

@@ -35,11 +35,14 @@ func (c *PortMapController) Get() {
 func (c *PortMapController) List() {
 	pageIndex, _ := c.GetInt("pageIndex")
 	pageSize, _ := c.GetInt("pageSize")
+	region := c.GetString("region")
 	targetIP := c.GetString("targetIP")
-	sourceIP := c.GetString("sourceIP")
-	userName := c.GetString("userName")
+	targetPort := c.GetString("targetPort")
+	sourcePort := c.GetString("sourcePort")
+	sortField := c.GetString("sortField")
+	sortDesc := c.GetString("sortDesc")
 
-	list, err := services.PortMap.Find(pageIndex, pageSize, targetIP, sourceIP, userName)
+	list, err := services.PortMap.Find(pageIndex, pageSize, region, targetIP, targetPort, sourcePort, sortField, sortDesc, nil)
 	if err != nil {
 		c.SetError(err)
 		return
