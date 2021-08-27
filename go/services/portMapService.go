@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/zaaksam/dproxy/go/config"
+	"github.com/zaaksam/dproxy/go/constant"
 	"github.com/zaaksam/dproxy/go/db"
 	"github.com/zaaksam/dproxy/go/model"
 )
@@ -19,12 +21,14 @@ func (s *portMapService) Get(id int64) (md *model.PortMapModel, err error) {
 		return nil, errors.New("ID不能为空")
 	}
 
-	session := db.NewSession()
-	session.Where("Deleted=0 and ID=?", id)
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Deleted=0 and ID=?", id)
 
 	var has bool
 	md = &model.PortMapModel{}
-	has, err = session.Get(md)
+	has, err = da.Get(md)
 	if err != nil {
 		return nil, errors.New("查找端口映射数据出错：" + err.Error())
 	}
@@ -33,35 +37,69 @@ func (s *portMapService) Get(id int64) (md *model.PortMapModel, err error) {
 		return nil, errors.New("没有找到对应的端口映射数据")
 	}
 
-	s.checkIsStart(md)
+	// s.checkIsStart(md)
 
 	return
 }
 
+// 查询等待处理的列表信息
+func (s *portMapService) findWait(pageIndex, pageSize int) (list *model.ListModel, err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Deleted=0 and Region=?", config.AppConf.Region)
+	da.In("State", constant.PORTMAP_STATE_START_WAIT, constant.PORTMAP_STATE_STOP_WAIT)
+	da.Desc("Created")
+
+	list, err = da.GetList(&model.PortMapModel{}, pageIndex, pageSize)
+	return
+}
+
 // Find 查询端口映射列表信息
-func (s *portMapService) Find(pageIndex, pageSize int, targetIP, sourceIP, userName string) (list *model.ListModel, err error) {
-	session := db.NewSession()
-	session.Where("Deleted=0")
+func (s *portMapService) Find(pageIndex, pageSize int, region, targetIP, targetPort, sourceIP, sortField, sortDesc string, states []constant.PortmapStateType) (list *model.ListModel, err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Deleted=0")
+
+	if region != "" {
+		da.And("Region like ?", "%"+region+"%")
+	}
 
 	if targetIP != "" {
-		session.And("TargetIP=?", targetIP)
+		da.And("TargetIP like ?", "%"+targetIP+"%")
+	}
+
+	if targetPort != "" {
+		da.And("TargetPort like ?", "%"+targetPort+"%")
 	}
 
 	if sourceIP != "" {
-		session.And("SourceIP=?", sourceIP)
+		da.And("SourceIP like ?", "%"+sourceIP+"%")
 	}
 
-	if userName != "" {
-		session.And("UserName=?", userName)
+	if len(states) > 0 {
+		da.In("State", states)
 	}
 
-	session.Desc("Created")
-
-	list, err = db.GetList(session, &model.PortMapModel{}, pageIndex, pageSize)
-
-	if mds, ok := list.Items.(*[]*model.PortMapModel); ok {
-		s.checkIsStart(*mds...)
+	order := "Created"
+	if sortField == "sourcePort" {
+		order = "SourcePort"
 	}
+
+	if sortDesc == "0" {
+		order += " asc"
+	} else {
+		order += " desc"
+	}
+
+	da.OrderBy(order)
+
+	list, err = da.GetList(&model.PortMapModel{}, pageIndex, pageSize)
+
+	// if mds, ok := list.Items.(*[]*model.PortMapModel); ok {
+	// 	s.checkIsStart(*mds...)
+	// }
 
 	return
 }
@@ -89,10 +127,11 @@ func (*portMapService) Add(md *model.PortMapModel) (result *model.PortMapModel, 
 		return
 	}
 
-	session := db.NewSession()
+	da := db.NewDA()
+	defer da.Close()
 
 	var cnt int64
-	cnt, err = session.Where("Deleted=0 and TargetIP=? and TargetPort=? and SourceIP=? and SourcePort=?", md.TargetIP, md.TargetPort, md.SourceIP, md.SourcePort).Count(&model.PortMapModel{})
+	cnt, err = da.Where("Deleted=0 and Region=? and ((TargetIP=? and TargetPort=?) or (SourceIP=? and SourcePort=?))", md.Region, md.TargetIP, md.TargetPort, md.SourceIP, md.SourcePort).Count(&model.PortMapModel{})
 	if err != nil {
 		err = errors.New("查询有效端口映射数据错误：" + err.Error())
 	} else if cnt > 0 {
@@ -107,9 +146,10 @@ func (*portMapService) Add(md *model.PortMapModel) (result *model.PortMapModel, 
 	md.Created = t.Unix()
 	md.Updated = md.Created
 	md.Deleted = 0
+	md.State = constant.PORTMAP_STATE_STOP
 
 	var n int64
-	n, err = session.Insert(md)
+	n, err = da.Insert(md)
 	if err != nil {
 		err = errors.New("添加端口映射失败：" + err.Error())
 		return
@@ -149,10 +189,11 @@ func (*portMapService) Update(md *model.PortMapModel) (err error) {
 		return
 	}
 
-	session := db.NewSession()
+	da := db.NewDA()
+	defer da.Close()
 
 	var cnt int64
-	cnt, err = session.Where("Deleted=0 and TargetIP=? and TargetPort=? and SourceIP=? and SourcePort=? and ID != ?", md.TargetIP, md.TargetPort, md.SourceIP, md.SourcePort, md.ID).Count(&model.PortMapModel{})
+	cnt, err = da.Where("Deleted=0 and TargetIP=? and TargetPort=? and SourceIP=? and SourcePort=? and ID != ?", md.TargetIP, md.TargetPort, md.SourceIP, md.SourcePort, md.ID).Count(&model.PortMapModel{})
 	if err != nil {
 		err = errors.New("查询有效端口映射数据错误：" + err.Error())
 	} else if cnt > 0 {
@@ -165,7 +206,7 @@ func (*portMapService) Update(md *model.PortMapModel) (err error) {
 	md.Updated = time.Now().Unix()
 
 	var n int64
-	n, err = db.Engine.Where("Deleted=0 and ID=?", md.ID).Cols("Title", "TargetIP", "TargetPort", "SourceIP", "SourcePort", "UserID", "UserName", "Updated").Update(md)
+	n, err = da.Where("Deleted=0 and ID=?", md.ID).Cols("Title", "TargetIP", "TargetPort", "SourceIP", "SourcePort", "UserID", "UserName", "Updated").Update(md)
 	if err != nil {
 		err = errors.New("更新端口映射失败：" + err.Error())
 	} else if n <= 0 {
@@ -185,7 +226,10 @@ func (*portMapService) Delete(id int64) error {
 		Deleted: time.Now().Unix(),
 	}
 
-	n, err := db.Engine.Where("Deleted=0 and ID=?", id).Cols("Deleted").Update(md)
+	da := db.NewDA()
+	defer da.Close()
+
+	n, err := da.Where("Deleted=0 and ID=?", id).Cols("Deleted").Update(md)
 	if err != nil {
 		return errors.New("端口映射记录删除失败：" + err.Error())
 	} else if n == 0 {
@@ -195,10 +239,57 @@ func (*portMapService) Delete(id int64) error {
 	return nil
 }
 
-func (s *portMapService) checkIsStart(mds ...*model.PortMapModel) {
-	for i, l := 0, len(mds); i < l; i++ {
-		if _, ok := Proxy.proxys[mds[i].ID]; ok {
-			mds[i].IsStart = true
-		}
+// resetState 重置区域内的所有状态
+func (s *portMapService) resetState(state constant.PortmapStateType, regionOpt ...string) (err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	md := &model.PortMapModel{
+		State:   state,
+		Updated: time.Now().Unix(),
 	}
+
+	region := config.AppConf.Region
+	if len(regionOpt) == 1 {
+		region = regionOpt[0]
+	}
+
+	da.Where("Deleted=0 and Region=?", region)
+
+	_, err = da.Cols("Updated", "State").Update(md)
+	if err != nil {
+		err = errors.New("重置端口映射状态为'" + state.ToString() + "'时失败：" + err.Error())
+	}
+	return
 }
+
+// updateState 更新端口映射状态
+func (s *portMapService) updateState(state constant.PortmapStateType, idOpt ...int64) (err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	md := &model.PortMapModel{
+		State:   state,
+		Updated: time.Now().Unix(),
+	}
+
+	da.Where("Deleted=0")
+
+	if len(idOpt) == 1 {
+		da.And("ID=?", idOpt[0])
+	}
+
+	_, err = da.Cols("Updated", "State").Update(md)
+	if err != nil {
+		err = errors.New("更新端口映射状态为'" + state.ToString() + "'时失败：" + err.Error())
+	}
+	return
+}
+
+// func (s *portMapService) checkIsStart(mds ...*model.PortMapModel) {
+// 	for i, l := 0, len(mds); i < l; i++ {
+// 		if _, ok := Proxy.proxys[mds[i].ID]; ok {
+// 			mds[i].IsStart = true
+// 		}
+// 	}
+// }
