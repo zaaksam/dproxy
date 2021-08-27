@@ -1,5 +1,10 @@
 <template>
-    <Menu mode="horizontal" theme="dark" :active-name="activeName" @on-select="onSelect">
+    <Menu
+        mode="horizontal"
+        theme="dark"
+        :active-name="activeName"
+        @on-select="onSelect"
+    >
         <div class="layout-logo">{{ title }}</div>
         <div class="layout-nav">
             <Menu-item name="whitelist">
@@ -13,6 +18,10 @@
             <Menu-item name="log">
                 <Icon type="ios-analytics"></Icon>
                 日志管理
+            </Menu-item>
+            <Menu-item name="region">
+                <Icon type="ios-analytics"></Icon>
+                区域信息
             </Menu-item>
             <Menu-item name="doc">
                 <Icon type="ios-paper"></Icon>
