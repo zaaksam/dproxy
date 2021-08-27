@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/zaaksam/dproxy/go/config"
 	"github.com/zaaksam/dproxy/go/db"
 	"github.com/zaaksam/dproxy/go/model"
 )
@@ -44,13 +45,20 @@ func insert(typ string, v ...interface{}) {
 
 	content := fmt.Sprintf(strings.Repeat(" %v", vLen), v...)
 
+	if config.AppConf.Region != "" {
+		content = config.AppConf.Region + "：" + content
+	}
+
 	md := &model.LogModel{
 		Type:    typ,
 		Content: content,
 		Created: time.Now().Unix(),
 	}
 
-	_, err := db.Engine.Insert(md)
+	da := db.NewDA()
+	defer da.Close()
+
+	_, err := da.Insert(md)
 	if err != nil {
 		j, _ := json.Marshal(md)
 		logs.Critical(fmt.Sprintf("日志 [%s] 写入log日志错误：", string(j)), err)
