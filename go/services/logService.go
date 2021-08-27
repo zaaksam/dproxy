@@ -13,39 +13,47 @@ var Log logService
 type logService struct{}
 
 // Find 查询白名单列表信息
-func (*logService) Find(pageIndex, pageSize int, typ, content string) (list *model.ListModel, err error) {
-	session := db.NewSession()
+func (*logService) Find(pageIndex, pageSize int, created int64, typ, content string) (list *model.ListModel, err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	if created > 0 {
+		da.And("Created<?", created)
+	}
 
 	if typ != "" {
-		session.And("Type=?", typ)
+		da.And("Type=?", typ)
 	}
 
 	if content != "" {
-		session.And("Content like ?", "'%"+content+"%'")
+		da.And("Content like ?", "%"+content+"%")
 	}
 
-	session.Desc("Created")
+	da.Desc("Created")
 
-	list, err = db.GetList(session, &model.LogModel{}, pageIndex, pageSize)
+	list, err = da.GetList(&model.LogModel{}, pageIndex, pageSize)
 	return
 }
 
 // Delete 删除端口映射数据
-func (*logService) Delete(typ string, created int64, content string) error {
+func (*logService) Delete(created int64, typ, content string) error {
 	if created <= 0 {
 		return errors.New("created不能为空")
 	}
 
-	session := db.Engine.Where("Created<?", created)
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Created<?", created)
 	if typ != "" {
-		session.And("type=?", typ)
+		da.And("type=?", typ)
 	}
 	if content != "" {
-		session.And("content=?", "%"+content+"%")
+		da.And("content=?", "%"+content+"%")
 	}
 
 	md := &model.LogModel{}
-	n, err := session.Delete(md)
+	n, err := da.Delete(md)
 	if err != nil {
 		return errors.New("日志记录删除失败：" + err.Error())
 	} else if n == 0 {

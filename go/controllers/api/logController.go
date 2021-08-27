@@ -13,10 +13,11 @@ type LogController struct {
 func (c *LogController) List() {
 	pageIndex, _ := c.GetInt("pageIndex")
 	pageSize, _ := c.GetInt("pageSize")
-	typ := c.GetString("typ")
+	created, _ := c.GetInt64("created")
+	typ := c.GetString("type")
 	content := c.GetString("content")
 
-	list, err := services.Log.Find(pageIndex, pageSize, typ, content)
+	list, err := services.Log.Find(pageIndex, pageSize, created, typ, content)
 	if err != nil {
 		c.SetError(err)
 		return
@@ -27,11 +28,11 @@ func (c *LogController) List() {
 
 // Delete 删除白名单记录
 func (c *LogController) Delete() {
-	typ := c.GetString("type")
 	created, _ := c.GetInt64("created")
+	typ := c.GetString("type")
 	content := c.GetString("content")
 
-	err := services.Log.Delete(typ, created, content)
+	err := services.Log.Delete(created, typ, content)
 	if err != nil {
 		c.SetError(err)
 	}
