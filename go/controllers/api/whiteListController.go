@@ -37,9 +37,11 @@ func (c *WhiteListController) List() {
 	pageSize, _ := c.GetInt("pageSize")
 	ip := c.GetString("ip")
 	userName := c.GetString("userName")
-	isExpired, _ := c.GetBool("isExpired")
+	isExpired := c.GetString("isExpired")
+	sortField := c.GetString("sortField")
+	sortDesc := c.GetString("sortDesc")
 
-	list, err := services.WhiteList.Find(pageIndex, pageSize, ip, userName, isExpired)
+	list, err := services.WhiteList.Find(pageIndex, pageSize, ip, userName, isExpired, sortField, sortDesc)
 	if err != nil {
 		c.SetError(err)
 		return
@@ -88,6 +90,14 @@ func (c *WhiteListController) Delete() {
 	}
 
 	err = services.WhiteList.Delete(id)
+	if err != nil {
+		c.SetError(err)
+	}
+}
+
+// Clear 清理过期白名单记录
+func (c *WhiteListController) Clear() {
+	err := services.WhiteList.Clear()
 	if err != nil {
 		c.SetError(err)
 	}

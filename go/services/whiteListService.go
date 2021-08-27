@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/zaaksam/dproxy/go/config"
 	"github.com/zaaksam/dproxy/go/db"
 	"github.com/zaaksam/dproxy/go/logger"
 	"github.com/zaaksam/dproxy/go/model"
@@ -32,8 +33,10 @@ func (*whiteListService) Get(id int64) (md *model.WhiteListModel, err error) {
 		return nil, errors.New("ID不能为空")
 	}
 
-	session := db.NewSession()
-	session.Where("Deleted=0 and ID=?", id)
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Deleted=0 and ID=?", id)
 
 	// if !isExpired {
 	// 	session.And("Expired>?", time.Now().Unix())
@@ -41,7 +44,7 @@ func (*whiteListService) Get(id int64) (md *model.WhiteListModel, err error) {
 
 	var has bool
 	md = &model.WhiteListModel{}
-	has, err = session.Get(md)
+	has, err = da.Get(md)
 	if err != nil {
 		return nil, errors.New("查找白名单数据出错：" + err.Error())
 	}
@@ -54,25 +57,40 @@ func (*whiteListService) Get(id int64) (md *model.WhiteListModel, err error) {
 }
 
 // Find 查询白名单列表信息
-func (*whiteListService) Find(pageIndex, pageSize int, ip string, userName string, isExpired bool) (list *model.ListModel, err error) {
-	session := db.NewSession()
-	session.Where("Deleted=0")
+func (*whiteListService) Find(pageIndex, pageSize int, ip, userName, isExpired, sortField, sortDesc string) (list *model.ListModel, err error) {
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Deleted=0")
 
 	if ip != "" {
-		session.And("IP=?", ip)
+		da.And("IP like ?", "%"+ip+"%")
 	}
 
 	if userName != "" {
-		session.And("UserName=?", userName)
+		da.And("UserName like ?", "%"+userName+"%")
 	}
 
-	if isExpired {
-		session.And("Expired>?", time.Now().Unix())
+	if isExpired == "1" {
+		da.And("Expired<?", time.Now().Unix())
+	} else if isExpired == "0" {
+		da.And("Expired>?", time.Now().Unix())
 	}
 
-	session.Desc("Created")
+	order := "Created"
+	if sortField == "expired" {
+		order = "Expired"
+	}
 
-	list, err = db.GetList(session, &model.WhiteListModel{}, pageIndex, pageSize)
+	if sortDesc == "0" {
+		order += " asc"
+	} else {
+		order += " desc"
+	}
+
+	da.OrderBy(order)
+
+	list, err = da.GetList(&model.WhiteListModel{}, pageIndex, pageSize)
 	return
 }
 
@@ -96,10 +114,11 @@ func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListM
 		return
 	}
 
-	session := db.NewSession()
+	da := db.NewDA()
+	defer da.Close()
 
 	var cnt int64
-	cnt, err = session.Where("Deleted=0 and IP=? and Expired>?", md.IP, created).Count(&model.WhiteListModel{})
+	cnt, err = da.Where("Deleted=0 and IP=? and Expired>?", md.IP, created).Count(&model.WhiteListModel{})
 	if err != nil {
 		err = errors.New("查询IP错误：" + err.Error())
 	} else if cnt > 0 {
@@ -118,7 +137,7 @@ func (*whiteListService) Add(md *model.WhiteListModel) (result *model.WhiteListM
 	md.Deleted = 0
 
 	var n int64
-	n, err = session.Insert(md)
+	n, err = da.Insert(md)
 	if err != nil {
 		err = errors.New("添加白名单失败：" + err.Error())
 		return
@@ -155,9 +174,11 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 		return
 	}
 
-	session := db.NewSession()
+	da := db.NewDA()
+	defer da.Close()
+
 	var cnt int64
-	cnt, err = session.Where("Deleted=0 and IP=? and Expired>? and ID!=?", md.IP, updated, md.ID).Count(&model.WhiteListModel{})
+	cnt, err = da.Where("Deleted=0 and IP=? and Expired>? and ID!=?", md.IP, updated, md.ID).Count(&model.WhiteListModel{})
 	if err != nil {
 		err = errors.New("查询IP错误：" + err.Error())
 	} else if cnt > 0 {
@@ -170,7 +191,7 @@ func (*whiteListService) Update(md *model.WhiteListModel) (err error) {
 	md.Updated = updated
 
 	var n int64
-	n, err = session.Where("Deleted=0 and ID=?", md.ID).Cols("IP", "UserID", "UserName", "Expired", "Updated").Update(md)
+	n, err = da.Where("Deleted=0 and ID=?", md.ID).Cols("IP", "UserID", "UserName", "Expired", "Updated").Update(md)
 	if err != nil {
 		err = errors.New("更新白名单失败：" + err.Error())
 	} else if n <= 0 {
@@ -192,7 +213,10 @@ func (s *whiteListService) Delete(id int64) error {
 		Deleted: time.Now().Unix(),
 	}
 
-	n, err := db.Engine.Where("Deleted=0 and ID=?", id).Cols("Deleted").Update(md)
+	da := db.NewDA()
+	defer da.Close()
+
+	n, err := da.Where("Deleted=0 and ID=?", id).Cols("Deleted").Update(md)
 	if err != nil {
 		return errors.New("白名单记录删除失败：" + err.Error())
 	} else if n == 0 {
@@ -201,6 +225,24 @@ func (s *whiteListService) Delete(id int64) error {
 
 	//将代理中客户端设置为无效
 	Proxy.setClientInvalid(invalidIP)
+
+	return nil
+}
+
+// Clear 清理过期
+func (s *whiteListService) Clear() error {
+	da := db.NewDA()
+	defer da.Close()
+
+	da.Where("Expired<?", time.Now().Unix())
+
+	md := &model.WhiteListModel{}
+	n, err := da.Delete(md)
+	if err != nil {
+		return errors.New("清理过期白名单失败：" + err.Error())
+	} else if n == 0 {
+		return errors.New("清理过期白名单失败：没有符合条件的记录")
+	}
 
 	return nil
 }
@@ -250,10 +292,10 @@ func (s *whiteListService) updateCache(items []*model.WhiteListModel) {
 	s.cacheLastCreated = lastCreated
 }
 
-// Watch 监控有效白名单，并更新到缓存中，5秒循环
+// Watch 监控有效白名单，并更新到缓存中，2 秒循环
 func (s *whiteListService) Watch() {
 	for {
-		list, err := s.Find(1, 500, "", "", true)
+		list, err := s.Find(1, 500, "", "", "0", "", "")
 		if err != nil {
 			logger.Error("白名单监控失败：", err)
 		} else {
@@ -262,6 +304,6 @@ func (s *whiteListService) Watch() {
 			}
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
