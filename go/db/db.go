@@ -5,42 +5,60 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 
-	"github.com/go-xorm/core"
-	"github.com/go-xorm/xorm"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/zaaksam/dproxy/go/config"
 	"github.com/zaaksam/dproxy/go/model"
-)
 
-// IModel 模型接口
-type IModel interface {
-	TableName() string
-	NewItems() interface{}
-}
+	"xorm.io/core"
+	"xorm.io/xorm"
+	"xorm.io/xorm/names"
+)
 
 // Engine 数据库引擎
 var Engine *xorm.Engine
-var tables []xorm.TableName
+var tables []names.TableName
 
+// init 初始化
 func init() {
-	tables = make([]xorm.TableName, 20)
+	tables = make([]names.TableName, 20)
 
-	dir := path.Dir(os.Args[0])
-	dir = filepath.ToSlash(dir) // .../dproxy/go
-	file := filepath.Join(dir, "dproxy.db")
+	var (
+		err            error
+		driverName     string
+		dataSourceName string
+	)
+	if config.AppConf.MysqlServer == "" {
+		dir := path.Dir(os.Args[0])
+		dir = filepath.ToSlash(dir) // .../dproxy/go
+		dataSourceName = filepath.Join(dir, "dproxy.db")
 
-	_, err := os.Stat(file)
-	if err != nil && os.IsNotExist(err) {
-		_, err = os.Create(file)
-		if err != nil {
-			panic(fmt.Errorf("创建DB文件错误：%s", err))
+		_, err = os.Stat(dataSourceName)
+		if err != nil && os.IsNotExist(err) {
+			_, err = os.Create(dataSourceName)
+			if err != nil {
+				panic("创建DB文件错误：" + err.Error())
+			}
 		}
+
+		driverName = "sqlite3"
+	} else {
+		driverName = "mysql"
+		dataSourceName = config.AppConf.MysqlUsername + ":" + config.AppConf.MysqlPassword
+		dataSourceName += "@(" + config.AppConf.MysqlServer + ":" + strconv.Itoa(config.AppConf.MysqlPort) + ")/"
+		dataSourceName += config.AppConf.MysqlDatabase + "?charset=utf8mb4&loc=Asia%2FShanghai&multiStatements=true"
 	}
 
-	Engine, err = xorm.NewEngine("sqlite3", file)
+	Engine, err = xorm.NewEngine(driverName, dataSourceName)
+	if err != nil {
+		panic("创建数据库引擎错误：" + err.Error())
+	}
 
 	err = Engine.Ping()
 	if err != nil {
-		panic(fmt.Sprintf("DB连接不通：%s", err))
+		panic("DB连接不通：" + err.Error())
 	}
 
 	//结构体命名与数据库一致
@@ -50,103 +68,49 @@ func init() {
 		&model.LogModel{},
 		&model.WhiteListModel{},
 		&model.PortMapModel{},
+		&model.RegionModel{},
 	)
 	if err != nil {
-		os.Remove(file)
+		if driverName == "sqlite3" {
+			os.Remove(dataSourceName)
+		}
 		panic(err)
 	}
+
+	err = checkMigration()
+	if err != nil {
+		panic(err)
+	}
+
+	return
 }
 
-func createTable(beans ...xorm.TableName) (err error) {
+func createTable(beans ...names.TableName) (err error) {
 	// tables, err := Engine.DBMetas()
 	// if err != nil {
 	// 	panic(fmt.Sprintf("获取DB信息错误：%s", err))
 	// }
 
+	var ok bool
 	for i, l := 0, len(beans); i < l; i++ {
-		err = Engine.CreateTables(beans[i])
+
+		ok, err = Engine.IsTableExist(beans[i])
 		if err != nil {
-			return fmt.Errorf("创建数据库表[%s]失败：%s", beans[i].TableName(), err)
+			err = fmt.Errorf("检查数据库表[%s]是否存在失败：%s", beans[i].TableName(), err)
+			return
+		}
+
+		if ok {
+			// 表存在，跳过
+			continue
+		}
+
+		// err = Engine.CreateTables(beans[i])
+		err = Engine.Sync2(beans[i])
+		if err != nil {
+			err = fmt.Errorf("创建数据库表[%s]失败：%s", beans[i].TableName(), err)
+			return
 		}
 	}
 	return
-}
-
-// NewSession 创建新的数据库操作对象
-func NewSession() *xorm.Session {
-	session := Engine.NewSession()
-	session.IsAutoClose(true)
-	return session
-}
-
-// GetList 获取分页数据
-func GetList(session *xorm.Session, md IModel, pageIndex, pageSize int) (list *model.ListModel, err error) {
-	list = &model.ListModel{
-		PageIndex: pageIndex,
-		PageSize:  pageSize,
-		Items:     md.NewItems(),
-	}
-
-	//克隆查询对象
-	sessionCount := session.Clone()
-	defer sessionCount.Close()
-
-	statement := sessionCount.Statement()
-
-	//清空Orderby条件，在某些数据库count不能带orderby
-	statement.OrderStr = ""
-
-	if groupBy := statement.GroupByStr; groupBy != "" {
-		statement.GroupByStr = "" // count不能带groupby
-		list.Total, err = sessionCount.Select("count(DISTINCT " + groupBy + ")").Count(md)
-	} else {
-		sessionCount.Select("") // select置空
-		list.Total, err = sessionCount.Count(md)
-	}
-	if err != nil {
-		return
-	}
-
-	//计算分页
-	resetPagination(list)
-
-	//没有数据，提前返回
-	if list.Total <= 0 {
-		return
-	}
-
-	recordIndex := (list.PageIndex - 1) * list.PageSize
-	session.Limit(list.PageSize, recordIndex)
-
-	err = session.Table(md).Find(list.Items)
-	return
-}
-
-func resetPagination(list *model.ListModel) {
-	//检查页面长度
-	if list.PageSize <= 0 {
-		list.PageSize = 10
-	} else if list.PageSize > 500 {
-		list.PageSize = 500
-	}
-
-	//计算总页数
-	cnt := int(list.Total / int64(list.PageSize))
-	mod := int(list.Total % int64(list.PageSize))
-	if mod > 0 {
-		cnt++
-	}
-
-	//检查页面索引
-	switch {
-	case cnt == 0:
-		list.PageIndex = 1
-	case list.PageIndex > cnt:
-		list.PageIndex = cnt
-	case list.PageIndex <= 0:
-		list.PageIndex = 1
-	}
-
-	//设置页面总页数
-	list.PageCount = cnt
 }
